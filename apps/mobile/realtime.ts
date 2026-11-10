@@ -5,7 +5,7 @@ export function useRealtime(user: User | null) {
   const [socket, setSocket] = useState<Socket | null>(null),
     [connected, setConnected] = useState(false);
   useEffect(() => {
-    if (!user) {
+    if (!user || !API_URL) {
       setSocket(null);
       setConnected(false);
       return;

@@ -2,6 +2,16 @@
 
 Ngày 10/11/2026. Linux, Node24.22.1, PostgreSQL17 qua Docker, Expo58.0.23, React Native0.88.1, TypeScript6.0.3. Kết quả là môi trường phát triển, không thay thế nghiệm thu trên thiết bị người dùng.
 
+## Bản sửa kết nối Pixel 7 / web / iPhone
+
+Ngày 10/11/2026, sau bản EduShare 2: **40 test đạt (18 backend + 22 frontend)**. Phần frontend kiểm tra tự chọn API cho Android Studio Emulator, iOS Simulator, điện thoại thật theo Metro LAN, web theo host trình duyệt; hiệu chỉnh cấu hình localhost/10.0.2.2 cũ; giữ override riêng và URL remote; chặn cấu hình chứa credentials; phân biệt timeout/canceled/HTTP401/HTML và JSON hỏng.
+
+Backend bổ sung test bind cổng đã chiếm: API thứ hai báo lỗi có hướng dẫn, không làm dừng API thứ nhất. Chạy thực tế index.js cũng trả lỗi đã xử lý khi cổng bận. doctor:local kiểm tra health/PostgreSQL thành công mà không in mật khẩu. TypeScript, SDK check và native export iOS/Android đạt.
+
+Browser kiểm tra ô URL thực tế, nút Kiểm tra API, health thành công, mô phỏng mất mạng, khôi phục rồi kiểm tra lại; sai mật khẩu vẫn báo HTTP401 đúng và đăng nhập hợp lệ thành công. Không ghi nhận pageerror. Đây chưa phải nghiệm thu kết nối trên Pixel 7 của người dùng; đường mạng/firewall ở máy Windows vẫn cần kiểm tra bằng health trên thiết bị.
+
+Các kết quả 16 nhóm bên dưới là bản baseline trước khi thêm test kết nối. CI hiện chạy cả 40 test qua npm run check.
+
 ## Kiểm tra tự động
 
 | Kiểm tra                            | Kết quả                                   |

@@ -1,9 +1,34 @@
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-export const API_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:4000').replace(
-  /\/$/,
-  '',
-);
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
+import { resolveApiAddress } from './lib/apiAddress';
+import { requestJson } from './lib/request';
+export { ApiError } from './lib/request';
+export const API_ADDRESS = resolveApiAddress({
+  platform: Platform.OS,
+  isDevice: Device.isDevice,
+  development: __DEV__,
+  metroHost: Constants.expoConfig?.hostUri || Constants.expoGoConfig?.debuggerHost,
+  browserUrl: Platform.OS === 'web' && typeof window !== 'undefined' ? window.location.href : null,
+  genericUrl: process.env.EXPO_PUBLIC_API_URL,
+  platformUrl:
+    Platform.OS === 'android'
+      ? process.env.EXPO_PUBLIC_API_URL_ANDROID
+      : Platform.OS === 'ios'
+        ? process.env.EXPO_PUBLIC_API_URL_IOS
+        : process.env.EXPO_PUBLIC_API_URL_WEB,
+  apiPort: process.env.EXPO_PUBLIC_API_PORT,
+});
+export const API_URL = API_ADDRESS.url;
+export const DEVICE_LABEL =
+  Platform.OS === 'web'
+    ? 'Web / trình duyệt'
+    : `${Platform.OS === 'android' ? 'Android' : 'iOS'} · ${Device.modelName || 'thiết bị'}${Device.isDevice ? '' : ' (máy ảo)'}`;
+if (__DEV__)
+  console.info(
+    `[EduShare] ${DEVICE_LABEL} → API: ${API_URL || API_ADDRESS.error} (${API_ADDRESS.source})`,
+  );
 let token = '';
 export async function restoreToken() {
   token =
@@ -21,30 +46,24 @@ export async function saveToken(value: string) {
   else await SecureStore.deleteItemAsync('edushare.token');
 }
 export async function api<T>(path: string, method = 'GET', body?: unknown): Promise<T> {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 15000);
-  try {
-    const response = await fetch(`${API_URL}/api${path}`, {
-      method,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: controller.signal,
-    });
-    const json = response.headers.get('content-type')?.includes('application/json');
-    const data = json ? await response.json() : { error: await response.text() };
-    if (!response.ok) throw new Error(data.error || `Lỗi HTTP ${response.status}`);
-    if (!json) throw new Error('Máy chủ trả dữ liệu không hợp lệ.');
-    return data as T;
-  } catch (e) {
-    if (e instanceof TypeError || (e instanceof Error && e.name === 'AbortError'))
-      throw new Error('Không kết nối được API. Kiểm tra server và EXPO_PUBLIC_API_URL.');
-    throw e;
-  } finally {
-    clearTimeout(timeout);
-  }
+  return requestJson<T>(API_URL, path, {
+    method,
+    body,
+    token,
+    configurationError: API_ADDRESS.error,
+  });
+}
+export async function checkApiHealth() {
+  const health = await requestJson<{ ok: boolean; database: number; engine?: string }>(
+    API_URL,
+    '/health',
+    { timeoutMs: 8000, configurationError: API_ADDRESS.error },
+  );
+  if (health.ok !== true || health.database !== 1 || health.engine !== 'postgresql')
+    throw new Error(
+      'Địa chỉ này chưa phải API EduShare PostgreSQL phiên bản mới. Kiểm tra tiến trình đang chạy trên cổng API.',
+    );
+  return health;
 }
 export const getToken = () => token;
 export interface User {

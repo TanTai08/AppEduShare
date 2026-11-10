@@ -32,8 +32,7 @@ git clone https://github.com/TanTai08/AppEduShare.git
 cd AppEduShare
 code .
 npm.cmd ci
-Copy-Item server/.env.example server/.env
-Copy-Item apps/mobile/.env.example apps/mobile/.env
+npm.cmd run setup
 ```
 
 Khởi động PostgreSQL (Docker Desktop phải đang chạy):
@@ -109,13 +108,32 @@ Terminal 1, tại thư mục gốc:
 npm.cmd run api
 ```
 
-Đặt `EXPO_PUBLIC_API_URL` trong `apps/mobile/.env`:
+Frontend đọc **`apps/mobile/.env`**. Backend đọc **`server/.env`**; đặt EXPO_PUBLIC_API_URL ở backend không cấu hình được Expo.
 
-| Thiết bị                         | URL API                             |
-| -------------------------------- | ----------------------------------- |
-| Web / iOS Simulator trên Mac     | `http://localhost:4000`             |
-| Android Emulator                 | `http://10.0.2.2:4000`              |
-| iPhone / Android thật cùng Wi-Fi | `http://<IPv4-Wi-Fi-máy-tính>:4000` |
+Bản sửa kết nối hỗ trợ tự chọn URL khi chạy phát triển:
+
+```env
+EXPO_PUBLIC_API_URL=auto
+EXPO_PUBLIC_API_PORT=4000
+```
+
+| Nền tảng                   | URL auto trong phát triển                             |
+| -------------------------- | ----------------------------------------------------- |
+| Web trên máy tính          | `http://<host-trình-duyệt>:4000`, thường là localhost |
+| Android Emulator / Pixel 7 | `http://10.0.2.2:4000`                                |
+| iOS Simulator              | `http://localhost:4000`                               |
+| iPhone / Android thật      | `http://<IP-LAN-của-Metro>:4000`                      |
+
+Các URL loopback cũ trong biến chung (localhost/10.0.2.2) được hiệu chỉnh theo nền tảng ở chế độ phát triển. URL remote/tùy chỉnh không bị sửa. Nếu dùng adb reverse hoặc cần cấu hình riêng, đặt biến theo nền tảng; biến này được giữ nguyên:
+
+```env
+# Chỉ bật biến cần dùng:
+# EXPO_PUBLIC_API_URL_ANDROID=http://10.0.2.2:4000
+# EXPO_PUBLIC_API_URL_IOS=http://192.168.1.169:4000
+# EXPO_PUBLIC_API_URL_WEB=http://localhost:4000
+```
+
+Nếu Expo chạy qua tunnel, API vẫn cần URL riêng truy cập được từ điện thoại. Bản native phát hành cần URL API HTTPS tường minh; auto chỉ hỗ trợ phát triển. Web production không cấu hình URL dùng API cùng origin, nên hosting phải định tuyến /api và Socket.IO tới server.
 
 Terminal 2:
 
@@ -138,6 +156,23 @@ npx.cmd expo whoami
 ```
 
 Tài khoản chỉ có đăng nhập liên kết có thể cần browser flow: trong PowerShell đặt `$env:BROWSER="none"`, chạy `npx.cmd expo login`, mở **URL mới** in trong terminal trên trình duyệt cùng máy; giữ CLI chờ callback. Sau đó `Remove-Item Env:BROWSER`. Không dùng URL từ lần chạy đã dừng. Đây là tài khoản Expo, khác tài khoản EduShare.
+
+### Chẩn đoán lỗi fetch / cổng 4000
+
+Trong màn hình đăng nhập hoặc khi trang chủ báo lỗi, mở phần **Kết nối máy chủ**: xem nền tảng, URL thực tế và nhấn **Kiểm tra API**. Nút này kiểm tra cả health và engine PostgreSQL. Lỗi timeout, không kết nối, trả HTML do nhầm Metro và HTTP sai mật khẩu được phân biệt.
+
+Trong PowerShell tại thư mục gốc:
+
+```powershell
+npm.cmd run setup
+npm.cmd run doctor:local
+```
+
+setup chỉ tạo .env còn thiếu, không ghi đè file hiện có. doctor:local kiểm tra API trên máy tính, chỉ ra vị trí cấu hình/biến ghi đè và cảnh báo EXPO_PUBLIC_API_URL đặt nhầm ở server. Nó không in DATABASE_URL, mật khẩu hoặc token. Kiểm tra trên máy tính không chứng minh máy ảo/điện thoại truy cập được; dùng nút trong app hoặc mở đúng URL health trên thiết bị.
+
+Nếu .env.local, .env.development.local hoặc biến môi trường đang ghi đè .env, sửa đúng nguồn rồi chạy lại Expo với --clear. Với PowerShell mới luôn cd vào thư mục có package.json trước khi chạy npm. VS Code có task riêng chạy API, Pixel Android và chẩn đoán.
+
+API bị chiếm cổng sẽ báo rõ EADDRINUSE thay vì stack trace không xử lý; không tự tắt chương trình khác hoặc đổi cổng ngầm. Chỉ giữ một terminal API. Nếu cần thay PORT backend, đổi EXPO_PUBLIC_API_PORT hoặc URL frontend tương ứng.
 
 ## 6. Demo và kiểm tra database
 
@@ -171,6 +206,7 @@ PostgreSQL cần đang chạy; test tạo **schema tạm riêng** và xóa schem
 
 ```powershell
 npm.cmd test
+# Bao gồm test backend PostgreSQL và 22 test kết nối frontend
 npm.cmd run check
 npm.cmd run check:sdk -w apps/mobile
 npm.cmd run build:native -w apps/mobile

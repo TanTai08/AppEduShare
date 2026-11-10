@@ -6,20 +6,88 @@
       "type": "shell",
       "command": "npm run dev",
       "isBackground": true,
-      "problemMatcher": []
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run dev"
+      }
     },
     {
       "label": "EduShare: Tạo dữ liệu demo",
       "type": "shell",
       "command": "npm run db:seed",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run db:seed"
+      }
     },
     {
       "label": "EduShare: Kiểm tra toàn bộ",
       "type": "shell",
       "command": "npm run check",
       "group": "test",
-      "problemMatcher": []
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run check"
+      }
+    },
+    {
+      "label": "EduShare: Tạo cấu hình còn thiếu",
+      "type": "shell",
+      "command": "npm run setup",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run setup"
+      }
+    },
+    {
+      "label": "EduShare: Kiểm tra API và cấu hình",
+      "type": "shell",
+      "command": "npm run doctor:local",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run doctor:local"
+      }
+    },
+    {
+      "label": "EduShare: Chạy API",
+      "type": "shell",
+      "command": "npm run api",
+      "isBackground": true,
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run api"
+      }
+    },
+    {
+      "label": "EduShare: Chạy Pixel Android",
+      "type": "shell",
+      "command": "npm run android -w apps/mobile -- --clear",
+      "isBackground": true,
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "windows": {
+        "command": "npm.cmd run android -w apps/mobile -- --clear"
+      }
     }
   ]
 }

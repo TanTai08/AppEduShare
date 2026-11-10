@@ -16,6 +16,7 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import {
   api,
+  ApiError,
   restoreToken,
   saveToken,
   User,
@@ -31,6 +32,7 @@ import { useRealtime } from './realtime';
 import { Wallet, UserProfile, Inbox, RealtimeChat, SupportBox } from './components/Community';
 import BookMap from './components/BookMap';
 import { Pin } from './components/mapHtml';
+import ConnectionPanel from './components/ConnectionPanel';
 
 const C = {
   green: '#174D3C',
@@ -221,7 +223,7 @@ function MainApp() {
           if (live) setUser(me);
         }
       } catch (e) {
-        await saveToken('');
+        if (e instanceof ApiError && e.status === 401) await saveToken('');
         if (live) showError(e);
       } finally {
         if (live) setReady(true);
@@ -426,6 +428,7 @@ function MainApp() {
               <Text style={{ color: C.green }}>{toast}</Text>
             </View>
           )}
+          {!!error && !overlay && <ConnectionPanel />}
           {tab === 'home' && (
             <>
               <View style={[s.hero, { padding: wide ? 34 : 23 }]}>
@@ -1164,6 +1167,7 @@ function AuthForm({
     [area, setArea] = useState('Đà Nẵng');
   return (
     <View style={{ gap: 15 }}>
+      <ConnectionPanel />
       <Choices
         values={{ login: 'Đăng nhập', register: 'Tạo tài khoản' }}
         value={register ? 'register' : 'login'}

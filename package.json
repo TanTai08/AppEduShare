@@ -16,14 +16,17 @@
     "android": "npm run android -w apps/mobile",
     "ios": "npm run ios -w apps/mobile",
     "db:seed": "npm run seed -w server",
-    "test": "npm run test -w server",
+    "test": "npm run test -w server && npm run test:client",
     "typecheck": "npm run typecheck -w apps/mobile",
     "build:web": "npm run build -w apps/mobile",
     "check": "npm run typecheck && npm test && npm run build:web",
     "format": "prettier --write .",
     "db:up": "docker compose up -d",
     "db:migrate": "npm run migrate -w server",
-    "db:import:sqlite": "npm run import:sqlite -w server"
+    "db:import:sqlite": "npm run import:sqlite -w server",
+    "test:client": "npm run test -w apps/mobile",
+    "setup": "node scripts/setup-env.mjs",
+    "doctor:local": "node scripts/doctor-local.mjs"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
