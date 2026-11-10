@@ -174,6 +174,12 @@ Nếu .env.local, .env.development.local hoặc biến môi trường đang ghi 
 
 API bị chiếm cổng sẽ báo rõ EADDRINUSE thay vì stack trace không xử lý; không tự tắt chương trình khác hoặc đổi cổng ngầm. Chỉ giữ một terminal API. Nếu cần thay PORT backend, đổi EXPO_PUBLIC_API_PORT hoặc URL frontend tương ứng.
 
+### Chat cứ hiện “Đang kết nối lại” dù gửi tin qua HTTP được
+
+Đó là kênh Socket.IO chưa kết nối; REST/lịch sử có thể vẫn hoạt động. Bản sửa 11/11/2026 xử lý Origin mặc định của React Native Android: native gửi Origin bằng địa chỉ HTTP của API, không phải origin Metro/web. Server chấp nhận origin đúng host/cổng API hoặc origin web đã cấu hình, vẫn bắt buộc token hợp lệ và vẫn chặn origin lạ. Không dùng wildcard CORS hoặc tin X-Forwarded-Host để sửa lỗi.
+
+Cập nhật code rồi khởi động lại đúng một API. App đang mở sẽ tự thử kết nối lại; khi thành công hiện “Realtime đã kết nối”. Không cần xóa tin nhắn/database hoặc bật server chat ở cổng khác. Sau reverse proxy đổi Host, thêm origin API public vào CORS_ORIGINS nếu cần. Nếu vẫn không kết nối, kiểm tra health/URL API và phiên đăng nhập.
+
 ### Expo Go báo Cannot find native module ExpoCrypto
 
 Bản sửa ngày 11/11/2026 bỏ dependency expo-crypto khỏi phần chat. Mã chống gửi trùng tin nhắn được tạo bằng JavaScript thuần, không dùng để xác thực; token/mật khẩu phía server vẫn dùng node:crypto/scrypt. Nếu Expo Go cũ không có ExpoCrypto, việc mở màn hình chat không còn yêu cầu module này.

@@ -2,6 +2,12 @@
 
 Ngày 10/11/2026. Linux, Node24.22.1, PostgreSQL17 qua Docker, Expo58.0.23, React Native0.88.1, TypeScript6.0.3. Kết quả là môi trường phát triển, không thay thế nghiệm thu trên thiết bị người dùng.
 
+## Bản sửa WebSocket Origin Android — 11/11/2026
+
+Đã tái hiện handshake bị từ chối khi client gửi Origin bằng địa chỉ API (giống mặc định WebSocketModule của React Native Android). HTTP gửi tin không bị ảnh hưởng nên UI có thể vẫn hiển thị tin đã lưu trong khi trạng thái realtime reconnect.
+
+Server được sửa để chấp nhận đúng host/cổng API ngoài allowlist web; không mở wildcard hoặc tin forwarded host. **44 test đạt: 21 backend + 23 frontend.** Test mới kiểm tra client giả lập header native nhận tin riêng realtime; từ chối origin lạ, sai cổng/null và forwarded host giả; token sai vẫn bị chặn kể cả same-origin. TypeScript và web export đạt. Đây là kiểm thử giao thức trên server, chưa phải chạy trên máy Pixel 7 của người dùng.
+
 ## Bản sửa thiếu native ExpoCrypto — 11/11/2026
 
 - Bỏ static import/dependency expo-crypto, thay client_id của chat bằng mã UUID không bí mật tạo trong JavaScript. Không thay đổi cơ chế mật khẩu/token server.
@@ -18,7 +24,7 @@ Backend bổ sung test bind cổng đã chiếm: API thứ hai báo lỗi có h�
 
 Browser kiểm tra ô URL thực tế, nút Kiểm tra API, health thành công, mô phỏng mất mạng, khôi phục rồi kiểm tra lại; sai mật khẩu vẫn báo HTTP401 đúng và đăng nhập hợp lệ thành công. Không ghi nhận pageerror. Đây chưa phải nghiệm thu kết nối trên Pixel 7 của người dùng; đường mạng/firewall ở máy Windows vẫn cần kiểm tra bằng health trên thiết bị.
 
-Các kết quả 16 nhóm bên dưới là bản baseline trước khi thêm test kết nối. CI hiện chạy cả 41 test qua npm run check.
+Các kết quả 16 nhóm bên dưới là bản baseline trước khi thêm test kết nối. CI hiện chạy cả 44 test qua npm run check.
 
 ## Kiểm tra tự động
 

@@ -269,6 +269,54 @@ test('Socket.IO: authenticated private delivery, unauthorized socket denied, log
     outsider.disconnect();
   }
 });
+async function socketWithOrigin(account, origin, extraHeaders = {}) {
+  const socket = clientIo(base, {
+    auth: { token: account.token },
+    transports: ['websocket'],
+    reconnection: false,
+    timeout: 1500,
+    autoConnect: false,
+    extraHeaders: { Origin: origin, ...extraHeaders },
+  });
+  await new Promise((resolve, reject) => {
+    socket.once('connect', resolve);
+    socket.once('connect_error', (error) => {
+      socket.disconnect();
+      reject(error);
+    });
+    socket.connect();
+  });
+  return socket;
+}
+test('Android default API Origin connects and receives private realtime messages', async () => {
+  const seller = await account(),
+    buyer = await account(),
+    book = await listing(seller),
+    c = await conversation(buyer, book);
+  const receiver = await socketWithOrigin(seller, base);
+  try {
+    const incoming = once(receiver, 'message:new');
+    const sent = await call(
+      `/conversations/${c.id}/messages`,
+      'POST',
+      { body: 'Native Android origin test', client_id: randomUUID() },
+      buyer.token,
+    );
+    assert.equal(sent.status, 201);
+    const [message] = await incoming;
+    assert.equal(message.body, 'Native Android origin test');
+  } finally {
+    receiver.disconnect();
+  }
+});
+test('WebSocket still rejects unrelated Origin, wrong port and untrusted forwarded host', async () => {
+  const a = await account();
+  for (const origin of ['https://untrusted.example', 'http://127.0.0.1:1', 'null'])
+    await assert.rejects(socketWithOrigin(a, origin, { 'X-Forwarded-Host': 'untrusted.example' }));
+});
+test('Same API Origin does not bypass session authentication', async () => {
+  await assert.rejects(socketWithOrigin({ token: 'invalid' }, base), /Vui lòng đăng nhập lại/);
+});
 test('Purchase: self-buy, duplicate, two confirmations, immutable price and exactly-once points', async () => {
   const s = await account(),
     b = await account(),

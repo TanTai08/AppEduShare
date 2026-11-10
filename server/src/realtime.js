@@ -3,6 +3,7 @@ import { Server } from 'socket.io';
 import { createApp, findSession, allowedOrigins } from './app.js';
 import { tokenHash } from './auth.js';
 import { participant } from './domain.js';
+import { socketOriginAllowed } from './socket-origin.js';
 export function createHttpServer(db, { rateLimits = true } = {}) {
   let io;
   const events = (e) => {
@@ -20,8 +21,7 @@ export function createHttpServer(db, { rateLimits = true } = {}) {
   io = new Server(server, {
     maxHttpBufferSize: 16384,
     cors: { origin: allowedOrigins() },
-    allowRequest: (req, cb) =>
-      cb(null, !req.headers.origin || allowedOrigins().includes(req.headers.origin)),
+    allowRequest: (req, cb) => cb(null, socketOriginAllowed(req, allowedOrigins())),
   });
   io.use(async (socket, next) => {
     try {
