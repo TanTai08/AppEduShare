@@ -71,11 +71,40 @@ API vẫn cần chạy trên máy tính: `npm run api`.
 
 - **Android Emulator:** đặt `EXPO_PUBLIC_API_URL=http://10.0.2.2:4000` trong `apps/mobile/.env`, chạy `npm run android` ở terminal thứ hai.
 - **iOS Simulator trên macOS:** dùng `http://localhost:4000`, chạy `npm run ios`. Cần Xcode; không chạy iOS Simulator trên Windows.
-- **Điện thoại thật:** cùng Wi-Fi với máy tính, đặt URL thành `http://<IPv4-LAN-của-máy>:4000`, chạy `npm run start -w apps/mobile` và dùng client tương thích Expo SDK 54. Cho phép cổng 4000 qua firewall trong mạng riêng nếu cần.
-- Expo Go trên cửa hàng có thể chỉ hỗ trợ SDK mới hơn. Khi không tương thích, dùng Android client SDK 54 từ nguồn Expo hoặc tạo development build theo tài liệu Expo. Không nâng riêng React/React Native mà không nâng Expo đồng bộ.
+- **Điện thoại thật:** cùng Wi-Fi với máy tính, đặt URL thành `http://<IPv4-LAN-của-máy>:4000`, chạy `npm run start -w apps/mobile` và dùng Expo Go hỗ trợ **SDK 58**. Cho phép cổng 4000 qua firewall trong mạng riêng nếu cần.
+- Dự án đã nâng đồng bộ lên **Expo SDK 58**, React 19.3 và React Native 0.88 để mở bằng Expo Go SDK 58. Không nâng riêng React/React Native mà không nâng Expo đồng bộ. iPhone thật không hỗ trợ cài Expo Go SDK cũ qua App Store.
 - Sau khi sửa `.env`, khởi động lại Expo; nếu cache cũ, chạy `npx expo start --clear` từ `apps/mobile`.
 
 Đây là mã nguồn đa nền tảng; kiểm chứng Android/iOS trên thiết bị và ký ứng dụng là bước nghiệm thu riêng, chưa có APK/IPA phát hành trong repository.
+
+### Cập nhật từ bản SDK 54 và kết nối iPhone
+
+Trong PowerShell, dừng Expo cũ bằng Ctrl+C rồi chạy:
+
+```powershell
+cd D:\EDUSHARE\AppEduShare
+git pull --ff-only
+npm.cmd ci
+```
+
+Giữ cấu hình cá nhân trong `apps/mobile/.env` (file này không bị Git ghi đè). Dùng `ipconfig` tìm IPv4 Wi-Fi của máy tính rồi đặt:
+
+```env
+EXPO_PUBLIC_API_URL=http://<IPv4-LAN-của-máy>:4000
+```
+
+Chạy API ở terminal thứ nhất: `npm.cmd run api`. Trên Safari iPhone, mở `http://<IPv4-LAN-của-máy>:4000/api/health`; cần thấy `{"ok":true,"database":1}` trước khi đăng nhập.
+
+Chạy Expo ở terminal thứ hai:
+
+```powershell
+cd D:\EDUSHARE\AppEduShare
+npm.cmd run start -w apps/mobile -- --clear --lan
+```
+
+Quét QR bằng Camera iPhone để mở trong Expo Go, cho phép quyền Local Network. iPhone và máy tính cần cùng mạng Wi-Fi không chặn kết nối giữa thiết bị. Không dùng `localhost` hoặc `10.0.2.2` cho API trên iPhone. Đường dẫn Expo cổng 8081 tải mã ứng dụng; API cổng 4000 phải truy cập được riêng.
+
+Nếu có chỉnh sửa mã nguồn chưa commit, Git có thể từ chối pull; lưu thay đổi trước khi cập nhật, không dùng reset để xóa chúng. `npm ci` thay thư viện cài đặt theo lockfile; không xóa database hoặc file `.env`. Không cần chạy lại seed để nâng SDK.
 
 ## 5. Chức năng đã triển khai
 
@@ -99,11 +128,16 @@ API vẫn cần chạy trên máy tính: `npm run api`.
 npm test
 npm run typecheck
 npm run build:web
+# Kiểm tra tương thích SDK và đóng gói mã iOS/Android:
+npm run check:sdk -w apps/mobile
+npm run build:native -w apps/mobile
 # hoặc chạy tất cả:
 npm run check
 ```
 
 Web build nằm ở `apps/mobile/dist/`. Đây là frontend tĩnh; vẫn phải chạy API riêng. Khi triển khai cần build với `EXPO_PUBLIC_API_URL` trỏ đến API HTTPS, cấu hình `CORS_ORIGINS` đúng domain và giữ database trên ổ đĩa bền vững. Không đóng gói DB vào hosting tĩnh.
+
+Bundle native nằm ở `apps/mobile/dist-native/`; đây là mã đóng gói để kiểm chứng bundler, không phải file cài đặt APK/IPA. Expo Go SDK 58 tải mã từ Metro khi chạy `npm run start -w apps/mobile`.
 
 ## 7. Cấu trúc
 

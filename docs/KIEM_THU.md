@@ -1,15 +1,30 @@
 # Biên bản kiểm thử phiên bản 1.0
 
+## Cập nhật tương thích Expo Go SDK 58
+
+Ngày 10/11/2026: nâng Expo lên **58.0.23**, React/React DOM **19.3.0**, React Native **0.88.1**, TypeScript **6.0.3**; cập nhật đồng bộ Metro Runtime, Status Bar, SecureStore và React types theo SDK. Cấu trúc database và API nghiệp vụ không thay đổi.
+
+- `expo install --check`: thư viện tương thích, không yêu cầu cập nhật thêm.
+- `expo-doctor`: **20/20 mục đạt**. Lần đầu hai kiểm tra dịch vụ bên ngoài lỗi kết nối; chạy lại với proxy môi trường đã đạt toàn bộ.
+- TypeScript, 11/11 nhóm kiểm thử API và web export đạt.
+- `npm run build:native -w apps/mobile`: export bundle **iOS và Android đạt**, gồm Hermes bytecode.
+- CI bổ sung kiểm tra SDK và export native để phát hiện lỗi nâng cấp sau này.
+- `npm audit --omit=dev`: **5 moderate, 0 high, 0 critical** tại thời điểm nâng cấp. Các số liệu SDK 54 bên dưới là lịch sử, không mô tả lockfile hiện tại.
+
+Export bundle không thay thế chạy thực tế trên iPhone/Android. Chưa nghiệm thu Expo Go trên thiết bị người dùng hoặc tạo APK/IPA có chữ ký. Xem README mục cập nhật SDK 54 → 58 để lấy mã và cấu hình API theo IP Wi-Fi.
+
+## Kết quả bản bàn giao ban đầu (SDK 54)
+
 Ngày: **10/11/2026**. Môi trường: Linux, Node **24.22.1**, npm **11.9.0**, Expo **54.0.38**, React Native **0.81.5**. Đây là kết quả chạy trong môi trường phát triển của phiên làm việc; cần chạy lại trên máy nộp bài.
 
 ## Kiểm tra tự động
 
-| Lệnh | Kết quả |
-|---|---|
-| `npm run typecheck` | Đạt, không có lỗi TypeScript |
-| `npm test` | **11/11 nhóm test đạt** |
+| Lệnh                | Kết quả                         |
+| ------------------- | ------------------------------- |
+| `npm run typecheck` | Đạt, không có lỗi TypeScript    |
+| `npm test`          | **11/11 nhóm test đạt**         |
 | `npm run build:web` | Đạt, Expo export tạo bundle web |
-| `npm run check` | Đạt cả ba bước trên |
+| `npm run check`     | Đạt cả ba bước trên             |
 
 API tests dùng database trong bộ nhớ và server HTTP trên cổng tạm. Không yêu cầu seed hoặc server đang chạy. Mỗi nhóm có nhiều assertion; không đồng nhất số nhóm với số request/assertion.
 

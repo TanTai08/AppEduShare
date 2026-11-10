@@ -16,7 +16,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - run: npm run check:sdk -w apps/mobile
       - run: npm run check
+      - run: npm run build:native -w apps/mobile
       - uses: actions/upload-artifact@v4
         with:
           name: edushare-web
