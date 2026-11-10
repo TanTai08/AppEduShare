@@ -27,12 +27,13 @@ PostgreSQL healthy, `npm ci`, `npm run db:seed` cho database demo mới, API và
 - Hủy trước xác nhận: hoàn 20 điểm đúng một lần, tin trở lại active.
 - Có thể dùng tài khoản mới 0 điểm để minh họa accept bị từ chối, không làm mất sách/điểm.
 
-## 4. Ghim và chỉ đường
+## 4. Đăng ảnh và địa điểm giao nhận
 
-- Hoàng Nam đăng sách, nhập tên điểm hẹn công khai.
-- Chạm bản đồ ghim, kiểm tra lat/lon đổi, lưu tin.
-- Mở chi tiết, thấy điểm hẹn và nhấn Chỉ đường để mở bản đồ ngoài.
-- Tiles cần Internet/nhà cung cấp cho phép. Nếu bị giới hạn, trình diễn nhập tọa độ và chỉ đường; báo đúng điều kiện kiểm thử, không coi ảnh nền lỗi là bản đồ đã nghiệm thu.
+- Hoàng Nam mở Đăng tài liệu, nhấn **+ Chọn ảnh tài liệu**, chọn hai ảnh JPG/PNG/WebP (mỗi ảnh tối đa5MB).
+- Xem trước, đổi ảnh thứ hai làm bìa, thử xóa/chọn lại. Đợi tải xong và lưu cùng nội dung tin.
+- Xem ảnh bìa trong danh sách, mở chi tiết và chuyển giữa các ảnh.
+- Sửa tin, bỏ một ảnh rồi lưu; mở lại để xác nhận.
+- Nhập **Địa điểm giao nhận (công khai)** bằng văn bản, thống nhất thời gian qua chat. Bản đồ đã gỡ.
 
 ## 5. Hỗ trợ và quản trị
 

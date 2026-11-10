@@ -4,8 +4,8 @@
 2. Bài toán tìm tài liệu, hỏi trước mua, giao nhận và uy tín.
 3. Phạm vi bán/đổi/nhận bằng điểm; chưa thanh toán trong ứng dụng.
 4. Expo SDK58, Express/Socket.IO, PostgreSQL17.
-5. Kiến trúc REST + realtime và 14 bảng nghiệp vụ.
-6. Giao diện: hộp thư, ví, hồ sơ, bản đồ và hỗ trợ.
+5. Kiến trúc REST + realtime và 15 bảng nghiệp vụ.
+6. Giao diện: hộp thư, ví, hồ sơ, ảnh tài liệu và hỗ trợ.
 7. Luồng giao dịch hai xác nhận; +10, -20 và refund.
 8. Bất biến dữ liệu, advisory lock, ledger và phòng thưởng lặp.
 9. Demo hai tài khoản chat trước mua rồi giao nhận.

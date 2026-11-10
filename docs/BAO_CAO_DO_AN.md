@@ -5,18 +5,18 @@
 - Trường/Khoa: [Điền theo đơn vị đào tạo]
 - Sinh viên: [Họ tên] — Mã sinh viên: [Mã sinh viên] — Lớp: [Lớp]
 - Giảng viên hướng dẫn: [Họ tên] — Học phần: [Học phần]
-- Phiên bản: 2.0 — 10/11/2026
+- Phiên bản: 2.0 — cập nhật ảnh tài liệu 11/11/2026
 - Mã nguồn: https://github.com/TanTai08/AppEduShare
 
 Thông tin cá nhân chưa được cung cấp nên để trống. Người nộp cần rà soát quy định trình bày và học thuật của trường, bổ sung phần công việc cá nhân thực tế và kết quả chạy trên thiết bị của mình.
 
 ## TÓM TẮT
 
-EduShare 2 hỗ trợ sinh viên mua bán, trao đổi và nhận tài liệu bản giấy trong cùng trường hoặc khu vực. Từ bản MVP cục bộ, hệ thống được chuyển sang PostgreSQL và bổ sung chat realtime trước khi mua, ví điểm, điểm hẹn bản đồ, hồ sơ uy tín và hộp hỗ trợ. Giao diện sử dụng Expo SDK58/React Native/TypeScript, backend dùng Node.js/Express và Socket.IO.
+EduShare 2 hỗ trợ sinh viên mua bán, trao đổi và nhận tài liệu bản giấy trong cùng trường hoặc khu vực. Từ bản MVP cục bộ, hệ thống được chuyển sang PostgreSQL và bổ sung chat realtime trước khi mua, ví điểm, ảnh tài liệu, điểm hẹn dạng văn bản, hồ sơ uy tín và hộp hỗ trợ. Giao diện sử dụng Expo SDK58/React Native/TypeScript, backend dùng Node.js/Express và Socket.IO.
 
 Trọng tâm kỹ thuật là bảo toàn trạng thái tài liệu, giao dịch và số dư khi nhiều người thao tác đồng thời. Giao dịch hoàn thành cần xác nhận hai phía; điểm được cập nhật cùng sổ ledger trong transaction; sự kiện realtime phát sau commit. Cuộc trò chuyện độc lập với đơn mua nên hai bên có thể hỏi tình trạng và thương lượng trước. Dữ liệu SQLite cũ có công cụ chuyển sang PostgreSQL chỉ đọc, không xóa nguồn.
 
-Kết quả gồm mã nguồn, schema/migration, dữ liệu mẫu, kiểm thử HTTP/socket/database/import, ảnh giao diện và tài liệu vận hành. Phạm vi chưa bao gồm xác thực thanh toán/giao nhận ngoài đời, vận hành nhiều Node instances, tải ảnh/file số, AI sinh hoặc push khi app đóng. Kết quả bundling native không thay thế nghiệm thu trên Android/iPhone thật.
+Kết quả gồm mã nguồn, schema/migration, dữ liệu mẫu, kiểm thử HTTP/socket/database/import, ảnh giao diện và tài liệu vận hành. Phạm vi chưa bao gồm xác thực thanh toán/giao nhận ngoài đời, vận hành nhiều Node instances, tải file số, AI sinh hoặc push khi app đóng. Kết quả bundling native không thay thế nghiệm thu trên Android/iPhone thật.
 
 ## MỤC LỤC
 
@@ -43,7 +43,7 @@ Hệ thống tập trung thông tin tài liệu, liên hệ trước mua và qu�
 - Giao diện dùng chung cho web, Android và iOS; bố cục tiếng Việt thích ứng màn hình.
 - Tìm kiếm, đăng tin, mua/đổi và nhận sách bằng điểm.
 - Chat riêng realtime trước và sau khi gửi yêu cầu mua.
-- Ghim điểm nhận công khai và mở chỉ đường.
+- Chọn ảnh, xem trước, đổi ảnh bìa và ghi điểm giao nhận công khai bằng văn bản.
 - Xem hồ sơ, sao, nhận xét từ các giao dịch hoàn thành.
 - FAQ hỗ trợ tự động và phiếu riêng cho quản trị viên.
 - Chuyển dữ liệu SQLite sang PostgreSQL và kiểm thử các bất biến quan trọng.
@@ -82,11 +82,11 @@ Bản đầu dùng SQLite để dễ chạy đồ án mà không cài dịch v�
 
 Không cho điện thoại truy cập PostgreSQL trực tiếp. Connection string chỉ ở backend. PostgreSQL không tự làm chat realtime; cần Socket.IO hoặc cơ chế đẩy khác.
 
-### 2.4. Leaflet và dịch vụ bản đồ
+### 2.4. Chọn và xử lý ảnh tài liệu
 
-Leaflet điều khiển bản đồ; mã JS/CSS được đóng gói cùng app và giữ BSD license. Web dùng iframe, native dùng WebView. Tiles ảnh nền là dịch vụ bên ngoài, mặc định OpenStreetMap; phải giữ attribution, tuân thủ quota và chính sách nhà cung cấp. Không tải hàng loạt hoặc hỗ trợ tiles offline trong phạm vi này. Có thể cấu hình provider khác được phép qua biến môi trường public.
+Native dùng Expo ImagePicker, web dùng file input để chọn tối đa5 ảnh tĩnh JPG/PNG/WebP, mỗi ảnh tối đa5MB. Người đăng xem trước, xóa và chọn ảnh bìa trước khi lưu tin. Server kiểm tra signature/giải mã bằng Sharp, giới hạn25megapixel, chuẩn hóa hướng, bỏ EXIF/GPS và nén thành JPEG tối đa1600px cùng thumbnail480px.
 
-Điểm lưu là địa điểm hẹn tự chọn, không có theo dõi GPS liên tục. Tên và tọa độ được hiển thị công khai theo tin đăng; người bán nên chọn cổng trường, thư viện hoặc nơi công cộng.
+Ảnh lưu BYTEA trong PostgreSQL để triển khai và sao lưu cùng dữ liệu đồ án. Khi mở rộng cần đo tải và cân nhắc object storage/CDN. Ảnh nháp chỉ chủ đọc được; ảnh đã gắn tin công khai qua URL kể cả tin ẩn. UI bản đồ/WebView đã được gỡ do dịch vụ tiles công cộng chặn truy cập. Điểm giao nhận dùng tên nơi công cộng và thỏa thuận qua chat.
 
 ## CHƯƠNG 3. PHÂN TÍCH YÊU CẦU
 
@@ -110,7 +110,7 @@ Leaflet điều khiển bản đồ; mã JS/CSS được đóng gói cùng app v
 | FR04 | Realtime          | Tin mới, typing, chưa đọc, reconnect và lịch sử          |
 | FR05 | Giao dịch         | Giữ chỗ nguyên tử, cả hai xác nhận mới hoàn thành        |
 | FR06 | Điểm              | +10 mỗi bên, -20 nhận free, refund, chống xử lý lặp      |
-| FR07 | Map               | Chọn/lưu điểm hẹn và mở chỉ đường                        |
+| FR07 | Ảnh và điểm nhận | Tối đa5 ảnh, preview/đổi bìa/xóa, điểm nhận văn bản      |
 | FR08 | Uy tín            | Sao/nhận xét theo giao dịch, ẩn dữ liệu riêng tư         |
 | FR09 | Hỗ trợ            | FAQ và phiếu riêng chủ phiếu/admin                       |
 | FR10 | Kiểm duyệt        | Báo cáo, khóa tin, hủy giao dịch liên quan và audit      |
@@ -136,10 +136,11 @@ flowchart LR
  A <-->|Socket.IO private events| C[Realtime server]
  B --> D[(PostgreSQL)]
  B -->|after commit| C
- A --> E[Leaflet / tile provider / directions]
+ A -->|Upload base64| E[Sharp / validate + re-encode]
+ E --> D
 ```
 
-Hệ thống có 14 bảng nghiệp vụ và schema_migrations. ERD chi tiết trong CO_SO_DU_LIEU.md. Conversations độc lập với transactions; messages tham chiếu conversation. Point_ledger giữ sự thay đổi, users.points giữ tổng hiện tại. Reviews gắn transaction và tác giả, không cho đánh giá tùy ý trên hồ sơ.
+Hệ thống có 15 bảng nghiệp vụ và schema_migrations. ERD chi tiết trong CO_SO_DU_LIEU.md. Conversations độc lập với transactions; messages tham chiếu conversation. Point_ledger giữ sự thay đổi, users.points giữ tổng hiện tại. Reviews gắn transaction và tác giả, không cho đánh giá tùy ý trên hồ sơ.
 
 ### 4.2. Trạng thái giao dịch
 
@@ -177,7 +178,9 @@ Payload kiểm tra bằng Zod. Helmet, CORS và rate limits bảo vệ mức cơ
 
 App giữ các màn khám phá, tin riêng, yêu thích, giao dịch, thông báo, hồ sơ và quản trị. Module Community thêm Inbox, RealtimeChat, Wallet, UserProfile và SupportBox. Hook useRealtime quản lý socket theo tài khoản. Mobile hiển thị năm tab chính; các chức năng khác đi từ hồ sơ/lối tắt/nút hỗ trợ. Header hiển thị điểm hiện tại; SafeArea tránh tai thỏ.
 
-Biểu mẫu tin có tên điểm hẹn, map picker và lat/lon thủ công. Tọa độ được kiểm tra cả client và server. Web chỉ nhận postMessage từ iframe của chính component, native kiểm tra cấu trúc tọa độ; không nhúng nội dung mô tả người dùng vào script bản đồ. Link chỉ đường dùng tọa độ đã kiểm tra.
+Biểu mẫu có chọn ảnh, trạng thái tải, xem trước, xóa và đổi ảnh bìa; chưa tải xong thì không cho lưu. PhotoGallery hiển thị ảnh chi tiết và thumbnail; danh sách/hồ sơ dùng ảnh bìa hoặc minh họa khi chưa có ảnh. Ảnh nháp được dọn khi đóng form hoặc sau24giờ vào lần upload tiếp theo. Điểm giao nhận nhập văn bản; không còn bản đồ/kinh/vĩ độ.
+
+Upload xác thực trước khi nhận payload tối đa8MB; API JSON khác giữ64KB. Migration v2 thêm listing_images, không xóa dữ liệu. Khi lưu tin, validation tối đa5 UUID không trùng và kiểm tra quyền sở hữu; gắn ảnh và sửa tin trong cùng transaction. Client cũ không gửi image_ids vẫn giữ ảnh hiện có, gửi [] thì xóa.
 
 ### 5.3. Điểm và trải nghiệm
 
@@ -185,7 +188,7 @@ Ví cho biết số dư, quy tắc, từng delta, thời điểm và số dư sa
 
 ### 5.4. Giới hạn triển khai
 
-Bìa sách vẫn là minh họa tạo bằng UI, chưa tải ảnh thật. Tìm kiếm ILIKE chưa chuẩn hóa không dấu; các danh sách ngoài chat có giới hạn số lượng. API hiện phù hợp một Node instance. Chưa có email xác minh/reset, push lúc app đóng, thanh toán/file số hoặc LLM. Bản đồ nền phụ thuộc kết nối/chính sách dịch vụ tiles, dù điều khiển đã đóng gói cục bộ.
+Ảnh hiện lưu trong database; chưa dùng CDN/object storage cho quy mô lớn. Tìm kiếm ILIKE chưa chuẩn hóa không dấu; các danh sách ngoài chat có giới hạn số lượng. API hiện phù hợp một Node instance. Chưa có email xác minh/reset, push lúc app đóng, thanh toán/file số hoặc LLM.
 
 ## CHƯƠNG 6. KIỂM THỬ VÀ ĐÁNH GIÁ
 
@@ -195,13 +198,13 @@ Kiểm thử API chạy Express/Socket.IO thật trên cổng tạm, dùng Postg
 
 ### 6.2. Kết quả chức năng
 
-16 nhóm test bao gồm xác thực, validation, search escaping, quyền tin, chat trước mua, idempotency/cursor, socket riêng tư và logout, hai xác nhận, thưởng đúng một lần, cạnh tranh giữ chỗ, thiếu điểm, refund một lần, không chi vượt ví, cap/cooldown, đổi sách, public reputation, kiểm duyệt, support và tổng ledger. Một số nhóm chứa nhiều assertion; không đồng nhất số nhóm với số request.
+49 tests đạt (26 backend, 23 frontend) bao gồm xác thực, validation, search escaping, quyền tin, chat trước mua, idempotency/cursor, socket riêng tư và logout, hai xác nhận, thưởng đúng một lần, cạnh tranh giữ chỗ, thiếu điểm, refund một lần, không chi vượt ví, cap/cooldown, đổi sách, public reputation, kiểm duyệt, support và tổng ledger. Nhóm ảnh kiểm tra auth, file giả/hỏng/quá lớn, metadata, quyền đọc ảnh nháp, quyền gắn ảnh, thứ tự bìa, rollback, giữ ảnh với client cũ và xóa ảnh. Một số nhóm chứa nhiều assertion; không đồng nhất số nhóm với số request.
 
-Browser kiểm tra hai phiên sinh viên độc lập: chat trước mua và trả lời không cần refresh, gửi yêu cầu và cập nhật trạng thái realtime, xác nhận, đánh giá, lịch sử thưởng, nhận free và hủy hoàn điểm, FAQ, tạo phiếu. Kiểm tra map click làm thay đổi tọa độ, lưu và xuất hiện nút chỉ đường. Chi tiết kết quả/chưa kiểm chứng nằm trong KIEM_THU.md.
+Browser kiểm tra hai phiên sinh viên độc lập: chat trước mua và trả lời không cần refresh, gửi yêu cầu và cập nhật trạng thái realtime, xác nhận, đánh giá, lịch sử thưởng, nhận free và hủy hoàn điểm, FAQ, tạo phiếu. Bản cập nhật ảnh được kiểm tra browser: chọn2 ảnh → preview → xóa/chọn lại → đổi bìa → đăng → xem gallery → sửa bỏ ảnh; HTTP ảnh trả200 và không có lỗi JavaScript. Kiểm tra không còn iframe/ô tọa độ trong form. Chi tiết kết quả/chưa kiểm chứng nằm trong KIEM_THU.md.
 
 ### 6.3. Hạn chế bằng chứng
 
-Môi trường kiểm thử dùng proxy có chặn ảnh nền từ OpenStreetMap công cộng; không coi điều khiển map hoạt động là bằng chứng tiles hiển thị đầy đủ. Leaflet được đóng gói để không lỗi tải script CDN, nhưng vẫn cần kiểm chứng tiles từ mạng/điện thoại thật hoặc provider được cấp phép khác. Không tắt xác thực TLS để vượt lỗi môi trường.
+Minh chứng ảnh là browser với ảnh fixture tạo cho kiểm thử, không phải ảnh sách thật của người dùng. Luồng thư viện ảnh native cần nghiệm thu trên thiết bị; export không kiểm tra được hộp thoại quyền của Android/iOS. Các ảnh giao diện v2 cũ là minh chứng cho các chức năng cộng đồng; ảnh form và chi tiết mới ở docs/images/photos.
 
 Native export đạt chỉ chứng minh mã có thể đóng gói, không khẳng định đã chạy đầy đủ trên iPhone/Android. Chưa có đo tải, khảo sát người dùng, kiểm tra accessibility toàn diện hoặc pentest độc lập. Các điểm chưa có kết quả không ghi là đã đạt.
 
@@ -223,13 +226,13 @@ GitHub Actions cấp PostgreSQL service, cài npm ci, kiểm tra SDK/TypeScript/
 
 Sao lưu PostgreSQL bằng pg_dump/pgAdmin và thử restore vào database khác. Không dùng file SQLite cũ làm backup của dữ liệu mới. Không chạy compose down -v khi chỉ cập nhật mã. Khi production cần HTTPS, mật khẩu riêng, tài khoản DB có quyền phù hợp, log hạn chế dữ liệu cá nhân, theo dõi lỗi, chính sách lưu giữ và quy trình tranh chấp.
 
-Dịch vụ tiles cần được phép sử dụng, đủ quota và đúng attribution. Nhiều Node instances cần adapter realtime. Các giả định một instance, khóa nghiệp vụ chung và chống gian lận cơ bản phải được xem lại dựa trên số liệu sử dụng thực.
+Sao lưu database bao gồm ảnh BYTEA. Nhiều Node instances cần adapter realtime. Các giả định một instance, khóa nghiệp vụ chung và chống gian lận cơ bản phải được xem lại dựa trên số liệu sử dụng thực.
 
 ## CHƯƠNG 8. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
 
-EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải nghiệm có liên hệ trước mua, động lực chia sẻ qua điểm, điểm nhận trên bản đồ và tín hiệu uy tín. PostgreSQL cung cấp mô hình quan hệ và transaction để liên kết ví, ledger, giữ chỗ và xác nhận. Các kiểm thử tập trung vào lỗi có hậu quả dữ liệu, không chỉ màn hình thành công.
+EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải nghiệm có liên hệ trước mua, động lực chia sẻ qua điểm, ảnh tài liệu, điểm nhận văn bản và tín hiệu uy tín. PostgreSQL cung cấp mô hình quan hệ và transaction để liên kết ví, ledger, giữ chỗ và xác nhận. Các kiểm thử tập trung vào lỗi có hậu quả dữ liệu, không chỉ màn hình thành công.
 
-Ưu tiên tiếp theo là nghiệm thu native, ảnh thật, email, chính sách tranh chấp và chống tích điểm giả. Khi có nhu cầu mở rộng, đo tải để tối ưu khóa, triển khai adapter realtime và push. AI sinh chỉ nên bổ sung với dữ liệu hướng dẫn có căn cứ, kiểm soát riêng tư và bộ đánh giá; không gọi FAQ hiện tại là mô hình AI đã huấn luyện.
+Ưu tiên tiếp theo là nghiệm thu native, lưu ảnh trên object storage khi cần, email, chính sách tranh chấp và chống tích điểm giả. Khi có nhu cầu mở rộng, đo tải để tối ưu khóa, triển khai adapter realtime và push. AI sinh chỉ nên bổ sung với dữ liệu hướng dẫn có căn cứ, kiểm soát riêng tư và bộ đánh giá; không gọi FAQ hiện tại là mô hình AI đã huấn luyện.
 
 ## TÀI LIỆU THAM KHẢO
 
@@ -238,8 +241,8 @@ EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải
 3. PostgreSQL Documentation — https://www.postgresql.org/docs/17/
 4. node-postgres — https://node-postgres.com/
 5. Socket.IO — https://socket.io/docs/v4/
-6. Leaflet — https://leafletjs.com/reference.html
-7. OpenStreetMap Tile Usage Policy — https://operations.osmfoundation.org/policies/tiles/
+6. Expo ImagePicker — https://docs.expo.dev/versions/latest/sdk/imagepicker/
+7. Sharp — https://sharp.pixelplumbing.com/
 8. Node.js Crypto / SQLite — https://nodejs.org/api/crypto.html và https://nodejs.org/api/sqlite.html
 9. GitHub Actions — https://docs.github.com/en/actions
 10. OWASP Cheat Sheet Series — https://cheatsheetseries.owasp.org/
@@ -261,6 +264,12 @@ Các đường dẫn là tài liệu kỹ thuật để đối chiếu, không p
 ![Trợ lý FAQ và phiếu hỗ trợ](images/v2/support.png)
 
 ![Bố cục mobile web](images/v2/home-mobile.png)
+
+Ảnh cập nhật sau dùng ảnh fixture tạo cho kiểm thử, chụp từ web chạy thật:
+
+![Xem trước ảnh, xóa và chọn ảnh bìa](images/photos/form-preview.png)
+
+![Gallery ảnh tài liệu trên mobile web](images/photos/detail-mobile.png)
 
 ## PHỤ LỤC B. BÀN GIAO
 

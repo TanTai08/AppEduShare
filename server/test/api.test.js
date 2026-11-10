@@ -1,5 +1,6 @@
 import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
+import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
 import { io as clientIo } from 'socket.io-client';
 import { once } from 'node:events';
@@ -122,7 +123,7 @@ test('PostgreSQL health, idempotent migration and initial zero wallet', async ()
   const a = await account();
   assert.equal(a.user.points, 0);
   assert.equal((await call('/wallet', 'GET', undefined, a.token)).data.balance, 0);
-  assert.equal((await one(db, 'SELECT count(*)::int n FROM schema_migrations')).n, 1);
+  assert.equal((await one(db, 'SELECT count(*)::int n FROM schema_migrations')).n, 2);
 });
 test('Auth: duplicate email, password hashing, revocation and private role', async () => {
   const a = await account();
@@ -573,4 +574,202 @@ test('Wallet accounting invariant matches ledger sums for all users', async () =
     'SELECT u.id FROM users u LEFT JOIN point_ledger p ON p.user_id=u.id GROUP BY u.id HAVING u.points<>coalesce(sum(p.delta),0)',
   );
   assert.equal(inconsistent.length, 0);
+});
+
+const photoListingBody = {
+  title: 'Tài liệu có ảnh chụp',
+  description: 'Sách gốc chụp rõ tình trạng và nội dung.',
+  subject: 'CNTT',
+  school: 'VKU',
+  area: 'Đà Nẵng',
+  kind: 'sell',
+  price: 45000,
+  condition: 'Như mới',
+  pickup_label: 'Thư viện trường',
+};
+async function uploadPhoto(user, base64) {
+  const image =
+    base64 ||
+    (await sharp({ create: { width: 72, height: 48, channels: 3, background: '#397D66' } })
+      .jpeg()
+      .withMetadata({ orientation: 6 })
+      .toBuffer()
+      .then((b) => b.toString('base64')));
+  return call('/uploads/images', 'POST', { base64: image }, user.token);
+}
+test('Photo uploads validate auth, actual bytes, size and reject SVG/corrupted files', async () => {
+  const a = await account();
+  assert.equal((await call('/uploads/images', 'POST', { base64: 'AAAA' })).status, 401);
+  for (const base64 of [
+    'not base64!',
+    Buffer.from('<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>').toString(
+      'base64',
+    ),
+    Buffer.from([255, 216, 255, 0, 1, 2, 3]).toString('base64'),
+  ])
+    assert.equal((await uploadPhoto(a, base64)).status, 400);
+  assert.equal(
+    (await uploadPhoto(a, Buffer.alloc(5 * 1024 * 1024 + 1).toString('base64'))).status,
+    413,
+  );
+});
+test('Photos preview privately, bind in order, serve safe JPEG/thumbnail and strip EXIF', async () => {
+  const a = await account(),
+    b = await account(),
+    r1 = await uploadPhoto(a),
+    r2 = await uploadPhoto(a);
+  assert.equal(r1.status, 201, JSON.stringify(r1.data));
+  assert.equal(r2.status, 201);
+  const p1 = r1.data,
+    p2 = r2.data;
+  assert.equal((await fetch(base + p1.url)).status, 404);
+  assert.equal(
+    (await fetch(base + p1.url, { headers: { Authorization: 'Bearer ' + b.token } })).status,
+    404,
+  );
+  assert.equal(
+    (await fetch(base + p1.url, { headers: { Authorization: 'Bearer ' + a.token } })).status,
+    200,
+  );
+  const created = await call(
+    '/listings',
+    'POST',
+    { ...photoListingBody, image_ids: [p2.id, p1.id] },
+    a.token,
+  );
+  assert.equal(created.status, 201, JSON.stringify(created.data));
+  assert.deepEqual(
+    created.data.images.map((i) => i.id),
+    [p2.id, p1.id],
+  );
+  assert.equal(
+    (await call('/listings?q=' + encodeURIComponent(photoListingBody.title))).data.items.find(
+      (l) => l.id === created.data.id,
+    ).images[0].id,
+    p2.id,
+  );
+  const full = await fetch(base + p1.url);
+  assert.equal(full.status, 200);
+  assert.equal(full.headers.get('content-type'), 'image/jpeg');
+  assert.equal(full.headers.get('cross-origin-resource-policy'), 'cross-origin');
+  const metadata = await sharp(Buffer.from(await full.arrayBuffer())).metadata();
+  assert.equal(metadata.format, 'jpeg');
+  assert.equal(metadata.exif, undefined);
+  assert.equal(metadata.orientation, undefined);
+  assert.ok(metadata.width <= 1600 && metadata.height <= 1600);
+  const thumbnail = await fetch(base + p1.url + '?size=thumb');
+  assert.equal(thumbnail.status, 200);
+  const thumb = await sharp(Buffer.from(await thumbnail.arrayBuffer())).metadata();
+  assert.ok(thumb.width <= 480 && thumb.height <= 480);
+  assert.equal(
+    (await call(`/uploads/images/${p1.id}`, 'DELETE', undefined, a.token)).data.deleted,
+    false,
+  );
+});
+test('Photo ownership, cross-listing reuse and partial failure roll back the listing', async () => {
+  const a = await account(),
+    b = await account(),
+    image = (await uploadPhoto(a)).data;
+  const before = (await one(db, 'SELECT count(*)::int n FROM listings')).n;
+  assert.equal(
+    (await call('/listings', 'POST', { ...photoListingBody, image_ids: [image.id] }, b.token))
+      .status,
+    403,
+  );
+  assert.equal((await one(db, 'SELECT count(*)::int n FROM listings')).n, before);
+  assert.equal(
+    (await call(`/uploads/images/${image.id}`, 'DELETE', undefined, b.token)).status,
+    403,
+  );
+  const book = (
+    await call('/listings', 'POST', { ...photoListingBody, image_ids: [image.id] }, a.token)
+  ).data;
+  assert.equal(
+    (await call('/listings', 'POST', { ...photoListingBody, image_ids: [image.id] }, a.token))
+      .status,
+    403,
+  );
+  assert.equal(
+    (
+      await call(
+        `/listings/${book.id}`,
+        'PATCH',
+        { ...photoListingBody, image_ids: [randomUUID()] },
+        a.token,
+      )
+    ).status,
+    400,
+  );
+  assert.equal((await call(`/listings/${book.id}`)).data.images[0].id, image.id);
+});
+test('Photo edit: reorder/cover, legacy text edits preserve, explicit empty removes; limit five', async () => {
+  const a = await account(),
+    p1 = (await uploadPhoto(a)).data,
+    p2 = (await uploadPhoto(a)).data;
+  assert.equal(
+    (
+      await call(
+        '/listings',
+        'POST',
+        { ...photoListingBody, image_ids: Array.from({ length: 6 }, () => randomUUID()) },
+        a.token,
+      )
+    ).status,
+    400,
+  );
+  assert.equal(
+    (await call('/listings', 'POST', { ...photoListingBody, image_ids: [p1.id, p1.id] }, a.token))
+      .status,
+    400,
+  );
+  const book = (
+    await call('/listings', 'POST', { ...photoListingBody, image_ids: [p1.id, p2.id] }, a.token)
+  ).data;
+  let result = await call(
+    `/listings/${book.id}`,
+    'PATCH',
+    { ...photoListingBody, image_ids: [p2.id, p1.id] },
+    a.token,
+  );
+  assert.equal(result.status, 200);
+  assert.deepEqual(
+    result.data.images.map((i) => i.id),
+    [p2.id, p1.id],
+  );
+  result = await call(
+    `/listings/${book.id}`,
+    'PATCH',
+    { ...photoListingBody, title: 'Sửa tên không đổi ảnh' },
+    a.token,
+  );
+  assert.equal(result.data.images.length, 2);
+  result = await call(
+    `/listings/${book.id}`,
+    'PATCH',
+    { ...photoListingBody, image_ids: [] },
+    a.token,
+  );
+  assert.equal(result.data.images.length, 0);
+  assert.equal((await fetch(base + p1.url)).status, 404);
+});
+test('Pending photo deletion and cleanup never remove attached listing photos', async () => {
+  const a = await account(),
+    pending = (await uploadPhoto(a)).data,
+    used = (await uploadPhoto(a)).data;
+  await call('/listings', 'POST', { ...photoListingBody, image_ids: [used.id] }, a.token);
+  await db.query(
+    "UPDATE listing_images SET created_at=now()-interval '2 days' WHERE id=ANY($1::uuid[])",
+    [[pending.id, used.id]],
+  );
+  const fresh = (await uploadPhoto(a)).data;
+  assert.equal(
+    (await one(db, 'SELECT count(*)::int n FROM listing_images WHERE id=$1', [pending.id])).n,
+    0,
+  );
+  assert.equal((await fetch(base + used.url)).status, 200);
+  assert.equal(
+    (await call(`/uploads/images/${fresh.id}`, 'DELETE', undefined, a.token)).data.deleted,
+    true,
+  );
+  assert.equal((await fetch(base + fresh.url)).status, 404);
 });

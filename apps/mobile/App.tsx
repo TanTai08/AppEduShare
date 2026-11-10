@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,12 +11,15 @@ import {
   useWindowDimensions,
   KeyboardAvoidingView,
   Platform,
-  Linking,
+  Image,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
   api,
   ApiError,
+  MediaImage,
+  imageUri,
+  uploadListingImage,
   restoreToken,
   saveToken,
   User,
@@ -30,8 +33,9 @@ import {
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRealtime } from './realtime';
 import { Wallet, UserProfile, Inbox, RealtimeChat, SupportBox } from './components/Community';
-import BookMap from './components/BookMap';
-import { Pin } from './components/mapHtml';
+import PhotoPicker from './components/PhotoPicker';
+import PhotoGallery from './components/PhotoGallery';
+import { PickedPhoto } from './components/photoTypes';
 import ConnectionPanel from './components/ConnectionPanel';
 
 const C = {
@@ -610,25 +614,34 @@ function MainApp() {
                         },
                       ]}
                     >
-                      <View
-                        style={[
-                          s.book,
-                          {
-                            backgroundColor: ['#36594A', '#AA6A3B', '#46746E', '#666287'][
-                              index % 4
-                            ],
-                          },
-                        ]}
-                      >
-                        <Text style={{ color: '#DCE8CF', fontSize: 9, letterSpacing: 2 }}>
-                          TỦ SÁCH SINH VIÊN
-                        </Text>
-                        <Text numberOfLines={4} style={s.bookTitle}>
-                          {item.title}
-                        </Text>
-                        <View style={{ height: 2, backgroundColor: '#FFFFFF55', width: 35 }} />
-                        <Text style={{ color: '#FFFFFFBB', fontSize: 10 }}>{item.subject}</Text>
-                      </View>
+                      {item.images?.[0] ? (
+                        <Image
+                          accessibilityLabel={`Ảnh bìa ${item.title}`}
+                          source={{ uri: imageUri(item.images[0], true) }}
+                          resizeMode="cover"
+                          style={{ width: '100%', height: '100%' }}
+                        />
+                      ) : (
+                        <View
+                          style={[
+                            s.book,
+                            {
+                              backgroundColor: ['#36594A', '#AA6A3B', '#46746E', '#666287'][
+                                index % 4
+                              ],
+                            },
+                          ]}
+                        >
+                          <Text style={{ color: '#DCE8CF', fontSize: 9, letterSpacing: 2 }}>
+                            TỦ SÁCH SINH VIÊN
+                          </Text>
+                          <Text numberOfLines={4} style={s.bookTitle}>
+                            {item.title}
+                          </Text>
+                          <View style={{ height: 2, backgroundColor: '#FFFFFF55', width: 35 }} />
+                          <Text style={{ color: '#FFFFFFBB', fontSize: 10 }}>{item.subject}</Text>
+                        </View>
+                      )}
                       <View style={s.coverBadge}>
                         <Text style={{ fontSize: 11, color: C.green, fontWeight: '700' }}>
                           {kinds[item.kind]}
@@ -1217,25 +1230,113 @@ function ListingForm({
     [kind, setKind] = useState(item?.kind || 'sell'),
     [price, setPrice] = useState(String(item?.price || '')),
     [condition, setCondition] = useState(item?.condition || 'Như mới');
-  const [pickupLabel, setPickupLabel] = useState(item?.pickup_label || ''),
-    [pin, setPin] = useState<Pin | null>(
-      item?.latitude != null && item.longitude != null
-        ? { latitude: item.latitude, longitude: item.longitude }
-        : null,
-    );
-  const [lat, setLat] = useState(item?.latitude != null ? String(item.latitude) : ''),
-    [lon, setLon] = useState(item?.longitude != null ? String(item.longitude) : '');
-  const choosePin = (p: Pin) => {
-    setPin(p);
-    setLat(p.latitude.toFixed(6));
-    setLon(p.longitude.toFixed(6));
+  const [pickupLabel, setPickupLabel] = useState(item?.pickup_label || '');
+  const [photos, setPhotos] = useState<(MediaImage & { previewUri?: string })[]>(
+    item?.images || [],
+  );
+  const [uploading, setUploading] = useState(false),
+    [photoError, setPhotoError] = useState('');
+  const pendingPhotos = useRef(new Set<string>()),
+    alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    const pending = pendingPhotos.current;
+    return () => {
+      alive.current = false;
+      for (const id of pending) void api(`/uploads/images/${id}`, 'DELETE').catch(() => {});
+    };
+  }, []);
+  const addPhotos = async (files: PickedPhoto[]) => {
+    setUploading(true);
+    setPhotoError('');
+    try {
+      for (const file of files.slice(0, 5 - photos.length)) {
+        const photo = await uploadListingImage(file.base64);
+        if (!alive.current) {
+          void api(`/uploads/images/${photo.id}`, 'DELETE').catch(() => {});
+          break;
+        }
+        pendingPhotos.current.add(photo.id);
+        setPhotos((current) => [...current, { ...photo, previewUri: file.uri }]);
+      }
+    } catch (e) {
+      if (alive.current) setPhotoError(e instanceof Error ? e.message : 'Không tải được ảnh.');
+    } finally {
+      if (alive.current) setUploading(false);
+    }
+  };
+  const removePhoto = (id: string) => {
+    setPhotos((current) => current.filter((p) => p.id !== id));
+    if (pendingPhotos.current.has(id))
+      void api(`/uploads/images/${id}`, 'DELETE')
+        .then(() => pendingPhotos.current.delete(id))
+        .catch(() => {});
   };
   return (
     <View style={{ gap: 15 }}>
       <Text style={s.muted}>
-        Đăng sách hoặc tài liệu bản giấy bạn có quyền chuyển nhượng. Không đăng bản sao vi phạm bản
-        quyền.
+        Đăng tài liệu bạn có quyền chuyển nhượng. Thêm tối đa 5 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 5
+        MB. Ảnh đầu tiên là ảnh bìa.
       </Text>
+      <PhotoPicker
+        remaining={5 - photos.length}
+        disabled={busy || uploading}
+        onFiles={addPhotos}
+        onError={setPhotoError}
+      />
+      {uploading && (
+        <View style={s.row}>
+          <ActivityIndicator color={C.green} />
+          <Text style={s.muted}>Đang tải và xử lý ảnh…</Text>
+        </View>
+      )}
+      {!!photoError && (
+        <Text accessibilityRole="alert" style={{ color: '#A73434' }}>
+          {photoError}
+        </Text>
+      )}
+      {photos.length > 0 && (
+        <ScrollView horizontal contentContainerStyle={{ gap: 12, paddingVertical: 5 }}>
+          {photos.map((photo, index) => (
+            <View
+              key={photo.id}
+              style={{
+                width: 145,
+                gap: 8,
+                borderWidth: 1,
+                borderColor: C.line,
+                borderRadius: 12,
+                padding: 8,
+              }}
+            >
+              <Image
+                accessibilityLabel={`Ảnh xem trước ${index + 1}`}
+                source={{ uri: photo.previewUri || imageUri(photo, true) }}
+                style={{ width: 127, height: 115, borderRadius: 8 }}
+              />
+              <Text style={s.label}>{index === 0 ? 'Ảnh bìa' : `Ảnh ${index + 1}`}</Text>
+              <View style={{ gap: 6 }}>
+                {index > 0 && (
+                  <Button
+                    label="Làm ảnh bìa"
+                    secondary
+                    disabled={busy || uploading}
+                    onPress={() =>
+                      setPhotos((current) => [photo, ...current.filter((p) => p.id !== photo.id)])
+                    }
+                  />
+                )}
+                <Button
+                  label={`Xóa ảnh ${index + 1}`}
+                  secondary
+                  disabled={busy || uploading}
+                  onPress={() => removePhoto(photo.id)}
+                />
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+      )}
       <Field label="Tên tài liệu" value={title} onChange={setTitle} />
       <Field label="Môn học" value={subject} onChange={setSubject} />
       <Field
@@ -1258,25 +1359,13 @@ function ListingForm({
           Sách miễn phí · Người nhận dùng 20 điểm khi bạn chấp nhận yêu cầu.
         </Text>
       )}
-      <Field label="Tên điểm hẹn (công khai)" value={pickupLabel} onChange={setPickupLabel} />
+      <Field label="Địa điểm giao nhận (công khai)" value={pickupLabel} onChange={setPickupLabel} />
       <Text style={s.muted}>
-        Chạm bản đồ để ghim điểm nhận sách. Nên chọn cổng trường hoặc thư viện; không cần chia sẻ
-        địa chỉ nhà.
-      </Text>
-      <BookMap pin={pin} editable onChange={choosePin} />
-      <View style={s.row}>
-        <View style={{ flex: 1, minWidth: 130 }}>
-          <Field label="Vĩ độ điểm hẹn" value={lat} onChange={setLat} />
-        </View>
-        <View style={{ flex: 1, minWidth: 130 }}>
-          <Field label="Kinh độ điểm hẹn" value={lon} onChange={setLon} />
-        </View>
-      </View>
-      <Text style={s.muted}>
-        Có thể nhập tọa độ thủ công nếu bản đồ không tải. Để trống cả hai nếu chưa có điểm hẹn.
+        Ghi cổng trường, thư viện hoặc nơi công cộng. Hai bên thống nhất thời gian và chi tiết qua
+        chat.
       </Text>
       <Button
-        label={busy ? 'Đang lưu…' : 'Lưu tài liệu'}
+        label={uploading ? 'Đang tải ảnh…' : busy ? 'Đang lưu…' : 'Lưu tài liệu'}
         disabled={
           busy ||
           title.trim().length < 3 ||
@@ -1284,9 +1373,7 @@ function ListingForm({
           subject.trim().length < 2 ||
           !school ||
           !area ||
-          !!lat.trim() !== !!lon.trim() ||
-          (!!lat.trim() && (!Number.isFinite(Number(lat)) || Math.abs(Number(lat)) > 90)) ||
-          (!!lon.trim() && (!Number.isFinite(Number(lon)) || Math.abs(Number(lon)) > 180)) ||
+          uploading ||
           (kind === 'sell' && (!Number.isInteger(Number(price)) || Number(price) < 1000))
         }
         onPress={() =>
@@ -1300,8 +1387,7 @@ function ListingForm({
             price: kind === 'sell' ? Number(price) : 0,
             condition,
             pickup_label: pickupLabel,
-            latitude: lat.trim() ? Number(lat) : null,
-            longitude: lon.trim() ? Number(lon) : null,
+            image_ids: photos.map((photo) => photo.id),
           })
         }
       />
@@ -1347,6 +1433,7 @@ function Detail({
   }, [user, item]);
   return (
     <View style={{ gap: 16 }}>
+      {!!item.images?.length && <PhotoGallery images={item.images} />}
       <Text style={s.title}>{item.title}</Text>
       <Text style={s.badge}>
         {kinds[item.kind]} · {statuses[item.status]}
@@ -1373,19 +1460,11 @@ function Detail({
             : 'Chưa có đánh giá'}
         </Text>
       </View>
-      {item.latitude != null && item.longitude != null && (
-        <View style={{ gap: 12 }}>
-          <Text style={s.subtitle}>⌖ {item.pickup_label || 'Điểm hẹn nhận sách'}</Text>
-          <BookMap pin={{ latitude: item.latitude, longitude: item.longitude }} />
-          <Button
-            label="Chỉ đường đến điểm hẹn"
-            secondary
-            onPress={() => {
-              void Linking.openURL(
-                `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`,
-              ).catch(() => setError('Không mở được bản đồ.'));
-            }}
-          />
+      {!!item.pickup_label && (
+        <View style={s.panel}>
+          <Text style={s.subtitle}>Địa điểm giao nhận</Text>
+          <Text style={s.muted}>{item.pickup_label}</Text>
+          <Text style={s.muted}>Nhắn người bán để hẹn thời gian nhận tài liệu.</Text>
         </View>
       )}
       {user?.id !== item.owner_id && (

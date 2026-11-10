@@ -13,6 +13,9 @@ Base URL: `http://localhost:4000/api`. JSON UTF-8. Endpoint riêng tư dùng `Au
 | GET/POST  | /listings                     | Public đọc, đăng nhập để đăng                          |
 | GET/PATCH | /listings/:id                 | Public đọc; chỉ chủ tin sửa active/hidden chưa bị khóa |
 | POST      | /listings/:id/visibility      | Chủ tin ẩn/hiện, không vượt kiểm duyệt                 |
+| POST      | /uploads/images               | Đăng nhập, tải ảnh nháp base64                         |
+| DELETE    | /uploads/images/:id           | Chỉ chủ ảnh, chỉ xóa ảnh chưa gắn tin                   |
+| GET       | /images/:id?size=thumb         | JPEG; ảnh nháp riêng, ảnh đã gắn tin công khai          |
 | GET       | /my/listings                  | Tin của mình                                           |
 | GET       | /favorites                    | Yêu thích riêng                                        |
 | POST      | /favorites/:id                | Toggle yêu thích                                       |
@@ -51,12 +54,11 @@ Listing:
   "price": 50000,
   "condition": "Như mới",
   "pickup_label": "Thư viện trường",
-  "latitude": 16.0544,
-  "longitude": 108.2022
+  "image_ids": []
 }
 ```
 
-Kind sell/exchange/free; condition Mới/Như mới/Đã sử dụng. Giá sell >=1000 và nguyên; exchange/free giá 0. Server tự đặt point_cost=20 cho free; client không được gửi điểm tùy ý. Có thể bỏ tọa độ hoặc gửi cả hai NULL.
+Kind sell/exchange/free; condition Mới/Như mới/Đã sử dụng. Giá sell >=1000 và nguyên; exchange/free giá 0. Server tự đặt point_cost=20 cho free; client không được gửi điểm tùy ý. UI nhập điểm giao nhận bằng văn bản, không còn bản đồ. API vẫn chấp nhận cặp latitude/longitude cũ để tương thích dữ liệu.
 
 Danh sách: `/listings?q=SQL&area=Đà%20Nẵng&school=VKU&kind=sell&sort=price&limit=20&offset=0`; trả `{items,total}`, limit<=100, sort new/price.
 
@@ -74,6 +76,16 @@ Gửi lại cùng sender/client_id và cùng nội dung trả bản đã lưu; �
 Tạo transaction: `{listing_id,note,offered_listing_id?}`; offered bắt buộc với exchange. Action `{action:"accept"|"cancel"|"confirm"}`. Accept free cần đủ điểm; mọi thất bại rollback giữ chỗ và ví. Đánh giá `{rating:1..5,comment}`.
 
 FAQ `{message}` trả `{answer,suggestions,mode:"faq"}`. Phiếu `{subject,body}`. Phản hồi phiếu `{body}`. Chưa có API LLM hoặc cam kết phản hồi tức thời từ admin.
+
+## Tải và gắn ảnh
+
+1. POST `/uploads/images` với `{base64:"..."}` (không có tiền tố data URL). Cần token; xác thực trước khi parse body, tối đa 20 lần/phút/IP. JSON tối đa 8 MB cho base64 của ảnh tối đa 5 MB. Chấp nhận ảnh tĩnh JPG/PNG/WebP, kiểm tra signature và giải mã, tối đa 25 megapixel; không nhận SVG/file giả ảnh.
+2. Trả 201 `{id,url,width,height}`. Server xoay theo EXIF, bỏ metadata/GPS, nén JPEG tối đa 1600px và tạo thumbnail480px. Tối đa 20 ảnh chưa gắn tin/người; ảnh nháp quá 24 giờ được dọn ở lần upload tiếp theo.
+3. POST/PATCH listing gửi `image_ids:["UUID",...]`, tối đa5, không trùng. Chỉ được dùng ảnh của mình và chưa gắn tin khác. Thứ tự là thứ tự hiển thị, ảnh đầu là ảnh bìa. Gắn ảnh và lưu tin trong cùng transaction, lỗi rollback. Bỏ trường này khi sửa giữ ảnh cũ; `[]` xóa mọi ảnh của tin.
+4. Listing trả `images:[{id,url,width,height}]`, không trả dữ liệu BYTEA/base64. Ghép URL với gốc API (ví dụ `http://localhost:4000`), thêm `?size=thumb` để lấy ảnh thu nhỏ, mặc định size=full.
+5. GET ảnh nháp cần Bearer token của chủ ảnh; người khác nhận404. Ảnh đã gắn tin có URL công khai, kể cả tin đã ẩn; cache1ngày, ETag/304. Ảnh nháp private/no-store. DELETE ảnh nháp của người khác bị403; ảnh không tồn tại hoặc đã gắn tin của mình trả `{deleted:false}`. Muốn xóa ảnh đã đăng, sửa `image_ids` của tin rồi lưu.
+
+Các API JSON khác vẫn giới hạn64KB. Ảnh lưu trong PostgreSQL; bản backup database chứa cả ảnh.
 
 ## Socket.IO
 

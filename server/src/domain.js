@@ -110,7 +110,8 @@ export async function reward(db, queue, t) {
 }
 export const LISTING_SELECT = `SELECT l.*,u.name owner_name,
  (SELECT round(avg(rating),1)::float FROM reviews WHERE target_id=l.owner_id) owner_rating,
- (SELECT count(*)::int FROM reviews WHERE target_id=l.owner_id) owner_review_count
+ (SELECT count(*)::int FROM reviews WHERE target_id=l.owner_id) owner_review_count,
+ coalesce((SELECT json_agg(json_build_object('id',i.id,'url','/api/images/'||i.id,'width',i.width,'height',i.height) ORDER BY i.position) FROM listing_images i WHERE i.listing_id=l.id),'[]'::json) images
  FROM listings l JOIN users u ON u.id=l.owner_id`;
 export const SAFE_USER = 'id,name,email,school,area,bio,role,points,created_at';
 export async function publicProfile(db, id) {

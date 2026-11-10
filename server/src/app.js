@@ -22,6 +22,7 @@ import {
   publicProfile,
 } from './domain.js';
 import { supportAnswer } from './support.js';
+import { prepareImage, storeImage, bindImages, MAX_BASE64_LENGTH } from './images.js';
 const text = (min = 1, max = 200) => z.string().trim().min(min).max(max);
 const listingSchema = z
   .object({
@@ -34,6 +35,11 @@ const listingSchema = z
     price: z.number().int().min(0).max(100000000),
     condition: z.enum(['Mới', 'Như mới', 'Đã sử dụng']),
     pickup_label: text(0, 200).default(''),
+    image_ids: z
+      .array(z.uuid())
+      .max(5)
+      .refine((ids) => new Set(ids).size === ids.length, 'Ảnh bị trùng.')
+      .optional(),
     latitude: z.number().finite().min(-90).max(90).nullable().default(null),
     longitude: z.number().finite().min(-180).max(180).nullable().default(null),
   })
@@ -62,7 +68,10 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
   app.disable('x-powered-by');
   app.use(helmet());
   app.use(cors({ origin: (o, cb) => cb(null, !o || allowedOrigins().includes(o)) }));
-  app.use(express.json({ limit: '64kb' }));
+  const parseJson = express.json({ limit: '64kb' });
+  app.use((req, res, next) =>
+    req.path.replace(/\/$/, '') === '/api/uploads/images' ? next() : parseJson(req, res, next),
+  );
   const limiter = (limit, windowMs = 60000) =>
     rateLimits
       ? rateLimit({
@@ -104,6 +113,56 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
       fail(403, 'Bạn không thuộc giao dịch này.');
     return t;
   };
+  app.post(
+    '/api/uploads/images',
+    auth,
+    limiter(20),
+    express.json({ limit: '8mb' }),
+    async (req, res) => {
+      const b = z
+        .object({ base64: z.string().min(4).max(MAX_BASE64_LENGTH) })
+        .strict()
+        .parse(req.body);
+      const image = await prepareImage(b.base64);
+      const saved = await write((db) => storeImage(db, req.user.id, image));
+      res.status(201).json(saved);
+    },
+  );
+  app.delete('/api/uploads/images/:id', auth, async (req, res) => {
+    const photo = await one(pool, 'SELECT owner_id FROM listing_images WHERE id=$1', [
+      req.params.id,
+    ]);
+    if (!photo) return res.json({ deleted: false });
+    if (photo.owner_id !== req.user.id) fail(403, 'Bạn không sở hữu ảnh này.');
+    const result = await pool.query(
+      'DELETE FROM listing_images WHERE id=$1 AND owner_id=$2 AND listing_id IS NULL RETURNING id',
+      [req.params.id, req.user.id],
+    );
+    res.json({ deleted: result.rowCount > 0 });
+  });
+  app.get('/api/images/:id', async (req, res) => {
+    const size = z.enum(['full', 'thumb']).default('full').parse(req.query.size);
+    const photo = await one(
+      pool,
+      `SELECT owner_id,listing_id,mime_type,${size === 'thumb' ? 'thumbnail' : 'data'} AS bytes FROM listing_images WHERE id=$1`,
+      [req.params.id],
+    );
+    if (!photo) fail(404, 'Không tìm thấy ảnh.');
+    if (!photo.listing_id) {
+      const token = req.headers.authorization?.replace(/^Bearer /, '');
+      const user = await findSession(pool, token);
+      if (!user || user.id !== photo.owner_id) fail(404, 'Không tìm thấy ảnh.');
+    }
+    const etag = '"' + req.params.id + '-' + size + '"';
+    res.set({
+      'Content-Type': photo.mime_type,
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cache-Control': photo.listing_id ? 'public, max-age=86400' : 'private, no-store',
+      ETag: etag,
+    });
+    if (req.headers['if-none-match'] === etag) return res.status(304).end();
+    res.send(photo.bytes);
+  });
   app.get('/api/health', async (req, res) =>
     res.json({ ok: true, database: (await one(pool, 'SELECT 1 ok')).ok, engine: 'postgresql' }),
   );
@@ -232,59 +291,64 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
   });
   app.post('/api/listings', auth, async (req, res) => {
     const b = listingSchema.parse(req.body);
-    const l = await one(
-      pool,
-      `INSERT INTO listings(id,owner_id,title,description,subject,school,area,kind,price,point_cost,condition,pickup_label,latitude,longitude) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
-      [
-        randomUUID(),
-        req.user.id,
-        b.title,
-        b.description,
-        b.subject,
-        b.school,
-        b.area,
-        b.kind,
-        b.kind === 'sell' ? b.price : 0,
-        b.kind === 'free' ? POINT_RULES.redeem : 0,
-        b.condition,
-        b.pickup_label,
-        b.latitude,
-        b.longitude,
-      ],
-    );
-    res.status(201).json(l);
+    const result = await write(async (db) => {
+      await businessLock(db);
+      const id = randomUUID();
+      await db.query(
+        'INSERT INTO listings(id,owner_id,title,description,subject,school,area,kind,price,point_cost,condition,pickup_label,latitude,longitude) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',
+        [
+          id,
+          req.user.id,
+          b.title,
+          b.description,
+          b.subject,
+          b.school,
+          b.area,
+          b.kind,
+          b.kind === 'sell' ? b.price : 0,
+          b.kind === 'free' ? POINT_RULES.redeem : 0,
+          b.condition,
+          b.pickup_label,
+          b.latitude,
+          b.longitude,
+        ],
+      );
+      await bindImages(db, req.user.id, id, b.image_ids);
+      return one(db, `${LISTING_SELECT} WHERE l.id=$1`, [id]);
+    });
+    res.status(201).json(result);
   });
   app.patch('/api/listings/:id', auth, async (req, res) => {
     const b = listingSchema.parse(req.body);
-    res.json(
-      await write(async (db) => {
-        await businessLock(db);
-        const l = await getListing(db, req.params.id);
-        if (!l) fail(404, 'Không tìm thấy tin đăng.');
-        if (l.owner_id !== req.user.id || l.moderated) fail(403, 'Bạn không có quyền sửa tin này.');
-        if (!['active', 'hidden'].includes(l.status))
-          fail(409, 'Tin đang giao dịch hoặc đã hoàn thành.');
-        return one(
-          db,
-          'UPDATE listings SET title=$1,description=$2,subject=$3,school=$4,area=$5,kind=$6,price=$7,point_cost=$8,condition=$9,pickup_label=$10,latitude=$11,longitude=$12 WHERE id=$13 RETURNING *',
-          [
-            b.title,
-            b.description,
-            b.subject,
-            b.school,
-            b.area,
-            b.kind,
-            b.kind === 'sell' ? b.price : 0,
-            b.kind === 'free' ? POINT_RULES.redeem : 0,
-            b.condition,
-            b.pickup_label,
-            b.latitude,
-            b.longitude,
-            l.id,
-          ],
-        );
-      }),
-    );
+    const result = await write(async (db) => {
+      await businessLock(db);
+      const l = await getListing(db, req.params.id);
+      if (!l) fail(404, 'Không tìm thấy tin đăng.');
+      if (l.owner_id !== req.user.id || l.moderated) fail(403, 'Bạn không có quyền sửa tin này.');
+      if (!['active', 'hidden'].includes(l.status))
+        fail(409, 'Tin đang giao dịch hoặc đã hoàn thành.');
+      await db.query(
+        'UPDATE listings SET title=$1,description=$2,subject=$3,school=$4,area=$5,kind=$6,price=$7,point_cost=$8,condition=$9,pickup_label=$10,latitude=$11,longitude=$12 WHERE id=$13',
+        [
+          b.title,
+          b.description,
+          b.subject,
+          b.school,
+          b.area,
+          b.kind,
+          b.kind === 'sell' ? b.price : 0,
+          b.kind === 'free' ? POINT_RULES.redeem : 0,
+          b.condition,
+          b.pickup_label,
+          b.latitude,
+          b.longitude,
+          l.id,
+        ],
+      );
+      await bindImages(db, req.user.id, l.id, b.image_ids);
+      return one(db, `${LISTING_SELECT} WHERE l.id=$1`, [l.id]);
+    });
+    res.json(result);
   });
   app.post('/api/listings/:id/visibility', auth, async (req, res) => {
     await write(async (db) => {

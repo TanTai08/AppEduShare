@@ -16,6 +16,16 @@
       "name": "EduShare",
       "bundler": "metro"
     },
-    "plugins": ["expo-secure-store"]
+    "plugins": [
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép EduShare chọn ảnh tài liệu để đăng tin.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ]
+    ]
   }
 }

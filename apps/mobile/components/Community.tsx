@@ -1,9 +1,18 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  StyleSheet,
+  ActivityIndicator,
+  Image,
+} from 'react-native';
 import { createClientMessageId } from '../lib/clientMessageId';
 import { Socket } from 'socket.io-client';
 import {
   api,
+  imageUri,
   Conversation,
   Listing,
   Message,
@@ -196,6 +205,12 @@ export function UserProfile({ id, onBook }: { id: string; onBook: (item: Listing
       <Text style={cs.heading}>Sách đang chia sẻ · {profile.listings.length}</Text>
       {profile.listings.map((l) => (
         <Pressable accessibilityRole="button" key={l.id} onPress={() => onBook(l)} style={cs.panel}>
+          {!!l.images?.[0] && (
+            <Image
+              source={{ uri: imageUri(l.images[0], true) }}
+              style={{ width: '100%', height: 150, borderRadius: 10 }}
+            />
+          )}
           <Text style={cs.heading}>{l.title}</Text>
           <Text style={cs.copy}>
             {l.kind === 'sell'
@@ -469,7 +484,7 @@ export function SupportBox({ user, socket }: { user: User | null; socket: Socket
   const [messages, setMessages] = useState<{ role: string; body: string }[]>([
       {
         role: 'bot',
-        body: 'Chào bạn! Mình hỗ trợ về điểm, mua bán, chat, bản đồ và đánh giá. Mình trả lời theo hướng dẫn có sẵn; bạn có thể gửi phiếu cho quản trị viên bên dưới.',
+        body: 'Chào bạn! Mình hỗ trợ về điểm, mua bán, chat, ảnh tài liệu và đánh giá. Mình trả lời theo hướng dẫn có sẵn; bạn có thể gửi phiếu cho quản trị viên bên dưới.',
       },
     ]),
     [body, setBody] = useState(''),
@@ -548,9 +563,11 @@ export function SupportBox({ user, socket }: { user: User | null; socket: Socket
           </View>
         ))}
         <View style={cs.row}>
-          {['Cách nhận điểm', 'Chat trước khi mua', 'Ghim vị trí', 'Đánh giá uy tín'].map((q) => (
-            <Action key={q} label={q} secondary disabled={busy} onPress={() => ask(q)} />
-          ))}
+          {['Cách nhận điểm', 'Chat trước khi mua', 'Thêm ảnh tài liệu', 'Đánh giá uy tín'].map(
+            (q) => (
+              <Action key={q} label={q} secondary disabled={busy} onPress={() => ask(q)} />
+            ),
+          )}
         </View>
         <TextInput
           accessibilityLabel="Hỏi trợ lý hỗ trợ"

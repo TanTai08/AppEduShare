@@ -65,6 +65,23 @@ export async function checkApiHealth() {
     );
   return health;
 }
+export interface MediaImage {
+  id: string;
+  url: string;
+  width: number;
+  height: number;
+}
+export const imageUri = (image: MediaImage, thumbnail = false) =>
+  `${API_URL}${image.url}${thumbnail ? '?size=thumb' : ''}`;
+export async function uploadListingImage(base64: string): Promise<MediaImage> {
+  return requestJson<MediaImage>(API_URL, '/uploads/images', {
+    method: 'POST',
+    body: { base64 },
+    token,
+    timeoutMs: 45000,
+    configurationError: API_ADDRESS.error,
+  });
+}
 export const getToken = () => token;
 export interface User {
   id: string;
@@ -87,6 +104,7 @@ export interface Review {
   title: string;
 }
 export interface Listing {
+  images?: MediaImage[];
   id: string;
   owner_id: string;
   owner_name: string;

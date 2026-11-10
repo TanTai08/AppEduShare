@@ -2,15 +2,16 @@
 
 ## Nguồn chuẩn
 
-`server/src/schema.sql` là schema PostgreSQL 17+; `src/migrate.js` áp dụng migration version 1 trong bảng `schema_migrations`. Migration chạy trong transaction có advisory lock; không tự xóa bảng. Version này là khởi tạo **database PostgreSQL mới**, không phải lệnh thay đổi file SQLite.
+`server/src/schema.sql` là schema PostgreSQL 17+; `src/migrate.js` áp dụng version1 và `server/migrations/002-listing-images.sql` (version2) trong bảng `schema_migrations`. Migration chạy trong transaction có advisory lock; không tự xóa bảng. Version này là khởi tạo **database PostgreSQL mới**, không phải lệnh thay đổi file SQLite.
 
-Có **14 bảng nghiệp vụ** và bảng theo dõi migration:
+Có **15 bảng nghiệp vụ** và bảng theo dõi migration:
 
 | Bảng             | Nội dung và ràng buộc chính                                                             |
 | ---------------- | --------------------------------------------------------------------------------------- |
 | users            | UUID; email duy nhất không phân biệt hoa thường; password hash; bio; points >= 0        |
 | sessions         | SHA-256 token; user; thời hạn 7 ngày                                                    |
 | listings         | Chủ tin, nội dung, giá, hình thức, point_cost, trạng thái, điểm hẹn và tọa độ           |
+| listing_images   | UUID; owner; listing nullable; vị trí 0–4; JPEG BYTEA, thumbnail, kích thước; FK cascade |
 | favorites        | Khóa ghép user/tin, không lưu trùng                                                     |
 | conversations    | Một cuộc trò chuyện theo tin và người hỏi; có thể tạo trước giao dịch                   |
 | messages         | UUID, seq identity, conversation, sender, client_id; unique(sender, client_id)          |
@@ -26,6 +27,8 @@ Có **14 bảng nghiệp vụ** và bảng theo dõi migration:
 ```mermaid
 erDiagram
  USERS ||--o{ LISTINGS : owns
+ USERS ||--o{ LISTING_IMAGES : uploads
+ LISTINGS |o--o{ LISTING_IMAGES : illustrates
  USERS ||--o{ SESSIONS : authenticates
  USERS ||--o{ FAVORITES : saves
  LISTINGS ||--o{ FAVORITES : receives
@@ -69,9 +72,17 @@ Cột `buyer_read_at/seller_read_at` phục vụ số chưa đọc. Logout thu h
 
 ## Vị trí và hồ sơ
 
-Listing lưu latitude/longitude cùng nhau, kiểm tra miền [-90,90], [-180,180], hoặc cả hai NULL. Đây là điểm hẹn công khai người bán tự chọn. Không có bảng lịch sử GPS.
+Listing dùng pickup_label để ghi điểm giao nhận công khai. UI đã bỏ bản đồ và nhập tọa độ; latitude/longitude giữ lại trong schema/API để tương thích dữ liệu cũ, không còn được dùng trên màn hình. Không có bảng lịch sử GPS.
 
 Hồ sơ public chỉ trả tên, trường/khu vực, bio, ngày tham gia, sao, số đánh giá, số giao dịch và sách active. Không trả email, password hash, session hoặc số dư. Badge “Được cộng đồng đánh giá cao” cần ít nhất 5 nhận xét, trung bình >=4,5 sao; không gọi là xác minh danh tính.
+
+## Ảnh tài liệu (migration v2)
+
+`listing_images` lưu chủ ảnh, tin (NULL lúc mới tải), thứ tự0–4, MIME JPEG, width/height, ảnh BYTEA và thumbnail BYTEA. Unique(listing_id,position) áp dụng khi đã gắn tin. Ảnh gốc sau chuẩn hóa tối đa2MB, thumbnail tối đa256KB; đầu vào tối đa5MB. Sharp bỏ metadata và tạo hai kích thước1600/480px. Danh sách chỉ trả metadata/URL để tránh tải BYTEA trong mỗi request.
+
+Chủ tài khoản chỉ gắn ảnh của mình vào một tin; thay đổi tin và ảnh nằm trong cùng transaction/khóa nghiệp vụ. Ảnh đầu làm bìa, danh sách tối đa5 theo validation API; xóa khỏi danh sách khi sửa sẽ xóa dữ liệu ảnh. Ảnh chưa gắn tin chỉ chủ đọc được, giới hạn20/người; ảnh nháp quá24giờ được dọn vào lần upload tiếp theo. Ảnh đã gắn tin được đọc công khai qua URL kể cả khi tin ẩn.
+
+Chạy `npm run db:migrate` trên database hiện có để bổ sung bảng; không xóa hoặc seed lại dữ liệu. API cũng tự migrate lúc khởi động. Sao lưu pg_dump bao gồm cả BYTEA; chưa sử dụng object storage/CDN trong phạm vi đồ án.
 
 ## Import SQLite cũ
 

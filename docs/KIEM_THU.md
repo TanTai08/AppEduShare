@@ -1,5 +1,15 @@
 # Biên bản kiểm thử EduShare 2
 
+## Cập nhật ảnh tài liệu và bỏ bản đồ — 11/11/2026
+
+- **49 tests đạt: 26 backend PostgreSQL + 23 frontend.** TypeScript, web export, SDK dependency check và iOS/Android Hermes export đạt.
+- Thêm5 test backend: xác thực và định dạng ảnh; pending private/public sau khi gắn tin; nén JPEG/thumbnail và bỏ EXIF; quyền sở hữu/không gắn ảnh tin khác và rollback; sửa thứ tự/giữ ảnh với client cũ/xóa ảnh/giới hạn5; dọn ảnh nháp. Các assertion được nhóm trong5 test.
+- Browser tự động: đăng nhập → chọn2 file → xem trước → xóa/chọn lại → đổi ảnh bìa → đăng → xem bìa/gallery2ảnh → sửa bỏ1ảnh → còn1ảnh. Các request ảnh trả200, không có lỗi JavaScript. Form không còn iframe/ô kinh/vĩ độ, chi tiết dùng điểm giao nhận văn bản.
+- Ảnh minh chứng: `docs/images/photos/form-preview.png`, `detail-mobile.png`; dùng ảnh fixture tự tạo, không phải ảnh sách của người dùng. Đây là browser/mobile viewport, chưa phải nghiệm thu thư viện ảnh/quyền trên Pixel7/iPhone thật.
+- Migration v2 thêm bảng listing_images; kiểm thử migration chạy lặp và các nghiệp vụ cũ vẫn đạt. Không cần reset/seed/import database đang có dữ liệu.
+- Map/Leaflet/WebView và các biến cấu hình tiles đã gỡ. Phần bản đồ trong các biên bản bên dưới ghi lại phiên bản lịch sử, không áp dụng cho bản hiện tại.
+
+
 Ngày 10/11/2026. Linux, Node24.22.1, PostgreSQL17 qua Docker, Expo58.0.23, React Native0.88.1, TypeScript6.0.3. Kết quả là môi trường phát triển, không thay thế nghiệm thu trên thiết bị người dùng.
 
 ## Bản sửa WebSocket Origin Android — 11/11/2026
@@ -83,6 +93,6 @@ OpenStreetMap public trả ảnh báo giới hạn/block từ IP proxy dùng chu
 
 npm audit --omit=dev: **5 moderate, 0 high, 0 critical** tại thời điểm kiểm tra. Rà soát lại theo lockfile trước triển khai; không chạy audit fix --force để nâng/hạ SDK tùy tiện.
 
-Chưa có: kiểm thử native thực tế đầy đủ, tải lớn/nhiều Node instances, pentest độc lập, accessibility toàn diện hoặc khảo sát người dùng. Push khi app đóng, thanh toán, file số, ảnh tải lên, email xác minh/reset và LLM chưa trong phạm vi.
+Chưa có: kiểm thử native thực tế đầy đủ, tải lớn/nhiều Node instances, pentest độc lập, accessibility toàn diện hoặc khảo sát người dùng. Push khi app đóng, thanh toán, file số, email xác minh/reset và LLM chưa trong phạm vi.
 
 CI có PostgreSQL service và chạy SDK check, typecheck, tests, web/native export. Trạng thái thực tế xem tab Actions trên GitHub; kết quả cục bộ không tự chứng minh CI đã đạt.

@@ -8,7 +8,7 @@
 
 - **Chat realtime trước khi mua:** mở sách → Nhắn người bán. Hộp thư riêng, trạng thái kết nối, đang soạn tin, số tin chưa đọc, lịch sử phân trang và đồng bộ khi kết nối lại. Tin nhắn lưu PostgreSQL; cùng mã gửi lại không tạo tin trùng.
 - **Ví điểm:** mua bán hoàn thành thưởng **10 điểm cho mỗi bên**; nhận sách miễn phí dùng **20 điểm**, trừ khi chủ sách chấp nhận, hoàn khi hủy. Đổi/tặng không sinh điểm. Mỗi cặp được thưởng một lần/24 giờ; mỗi người tối đa 30 điểm/ngày UTC. Điểm không đổi thành tiền.
-- **Bản đồ điểm hẹn:** người bán chạm bản đồ để ghim hoặc nhập tọa độ, đặt tên điểm nhận; chi tiết sách có bản đồ và nút chỉ đường. Đây là vị trí công khai tự chọn, không theo dõi GPS liên tục.
+- **Ảnh tài liệu:** chọn tối đa 5 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 5 MB; xem trước, xóa và chọn ảnh bìa trước khi đăng. Ảnh xuất hiện trong danh sách, hồ sơ và chi tiết sách. Điểm giao nhận nhập bằng văn bản và thống nhất qua chat; đã loại bỏ bản đồ.
 - **Hồ sơ công khai:** giới thiệu, trường/khu vực, số giao dịch hoàn thành, số sao, số nhận xét và sách đang đăng. Chỉ thành viên giao dịch đã hoàn thành mới được đánh giá, mỗi bên một lần.
 - **Hộp hỗ trợ:** trợ lý FAQ theo chủ đề và phiếu riêng để quản trị viên trả lời/đóng phiếu. FAQ không phải AI sinh và không gửi dữ liệu tới dịch vụ LLM.
 - **Giao diện mới:** hộp thư, ví điểm, lối tắt giao dịch, nút hỗ trợ, điều hướng mobile 5 mục, safe area cho màn hình tai thỏ.
@@ -57,6 +57,19 @@ npm.cmd run dev
 Trên macOS/Linux dùng `npm` thay `npm.cmd`, `cp` thay `Copy-Item`.
 
 ## 3. Cập nhật dự án đang có (Windows)
+
+**Đã dùng PostgreSQL và chỉ cập nhật tính năng ảnh:** dừng API/Expo, chạy các lệnh sau. Giữ nguyên DATABASE_URL hiện có; không seed hoặc import lại.
+
+```powershell
+cd D:\EDUSHARE\AppEduShare
+git pull --ff-only
+npm.cmd ci
+npm.cmd run db:migrate
+```
+
+Migration v2 bổ sung bảng `listing_images`, giữ người dùng, tin đăng, chat và số điểm hiện có. API cũng tự áp dụng migration khi khởi động. Sau đó mở hai terminal theo mục 5 và chạy Expo với `--clear`.
+
+**Chỉ khi chuyển từ bản SQLite cũ sang PostgreSQL**, thực hiện phần bên dưới:
 
 Dừng API và Expo cũ, mở terminal VS Code:
 
@@ -202,15 +215,17 @@ Xem database bằng **pgAdmin** hoặc extension PostgreSQL của VS Code:
 
 - Host `localhost`, port `5432`, database `edushare`, user `edushare`, mật khẩu local theo cấu hình compose.
 - Xem `public.users`, `listings`, `conversations`, `messages`, `transactions`, `point_ledger`, `reviews`, `support_tickets`...
-- Schema chuẩn: `server/src/schema.sql`; migrations có version và khóa để chạy an toàn khi nhiều API cùng khởi động.
+- Schema khởi tạo: `server/src/schema.sql`; ảnh được bổ sung bởi `server/migrations/002-listing-images.sql`. Migrations có version và khóa; xem thêm bảng `listing_images` trong pgAdmin.
 
-## 7. Bản đồ và quyền riêng tư
+## 7. Ảnh tài liệu và địa điểm giao nhận
 
-Leaflet 1.9.4 được đóng gói cùng ứng dụng (giữ BSD license), không tải script từ CDN lúc chạy. Tiles OpenStreetMap cần Internet và tuân thủ https://operations.osmfoundation.org/policies/tiles/. Giữ attribution; không tải hàng loạt hoặc prefetch để dùng offline. Native WebView gửi User-Agent nhận diện ứng dụng. Dịch vụ tiles công cộng có thể giới hạn; khi triển khai nhiều người dùng cần nhà cung cấp tiles và điều khoản phù hợp.
+Trong **Đăng tài liệu/Sửa tài liệu**, nhấn **+ Chọn ảnh tài liệu**. Chọn tối đa 5 ảnh tĩnh JPG/PNG/WebP, mỗi ảnh tối đa 5 MB (tối đa 25 megapixel). Trên điện thoại cho phép truy cập thư viện ảnh khi được hỏi. Xem trước, xóa ảnh hoặc nhấn **Làm ảnh bìa**, đợi tải xong rồi lưu. Không bắt buộc có ảnh; sách cũ vẫn dùng bìa minh họa.
 
-Có thể cấu hình `EXPO_PUBLIC_MAP_TILE_URL` và `EXPO_PUBLIC_MAP_ATTRIBUTION` trong `apps/mobile/.env` theo một provider bạn được phép sử dụng, rồi khởi động lại Expo. Nếu provider cần map key public, giới hạn key theo ứng dụng/domain và quota; không đặt secret backend trong biến EXPO_PUBLIC.
+Server xác thực trước khi nhận ảnh, kiểm tra định dạng thực, giải mã và mã hóa lại bằng Sharp thành JPEG tối đa 1600px, đồng thời tạo ảnh thu nhỏ 480px và bỏ EXIF/GPS. Ảnh lưu dạng BYTEA trong PostgreSQL, không cần thư mục uploads hay dịch vụ ảnh riêng. Bản sao lưu PostgreSQL chứa cả ảnh. Khi mở rộng nên chuyển sang object storage/CDN sau khi đo tải.
 
-Điểm hẹn công khai là do người đăng chọn. Không lưu lịch sử GPS, không tự lấy vị trí nhà. Nếu tiles không tải, có thể nhập tọa độ và mở đường đi trong ứng dụng bản đồ ngoài. Bản đồ ngoài tự xác định điểm xuất phát nếu người dùng cho phép.
+Ảnh chưa gắn tin chỉ chủ tài khoản đọc được; khi lưu tin, ảnh trở thành tài nguyên công khai qua URL (kể cả sau khi ẩn tin). Không đăng ảnh chứa thông tin riêng tư. Tối đa 20 ảnh nháp/tài khoản; ảnh nháp quá 24 giờ được dọn ở lần tải ảnh tiếp theo. Đóng form sẽ thử xóa ảnh nháp. Sửa tin bỏ ảnh rồi lưu sẽ xóa ảnh đó khỏi database.
+
+Bản đồ, WebView và ô kinh/vĩ độ đã được gỡ. Nhập **Địa điểm giao nhận (công khai)** như cổng trường/thư viện, rồi thống nhất thời gian qua chat. Cột tọa độ cũ trong DB vẫn giữ để tương thích dữ liệu, không dùng trong giao diện. Các biến cấu hình map cũ có thể xóa khỏi apps/mobile/.env.
 
 ## 8. Kiểm thử và build
 
@@ -218,7 +233,7 @@ PostgreSQL cần đang chạy; test tạo **schema tạm riêng** và xóa schem
 
 ```powershell
 npm.cmd test
-# Bao gồm test backend PostgreSQL và 23 test frontend (kết nối và mã tin nhắn)
+# 49 tests: 26 backend PostgreSQL + 23 frontend
 npm.cmd run check
 npm.cmd run check:sdk -w apps/mobile
 npm.cmd run build:native -w apps/mobile
@@ -229,10 +244,10 @@ GitHub Actions có PostgreSQL service, kiểm tra SDK, TypeScript, tests và exp
 ## 9. Cấu trúc, sao lưu và giới hạn
 
 ```text
-apps/mobile/                 Giao diện Expo, API client, Socket.IO, bản đồ
+apps/mobile/                 Giao diện Expo, API client, Socket.IO, chọn/xem ảnh
 server/src/                  Express, nghiệp vụ điểm/giao dịch, realtime, SQL
 server/test/                 Kiểm thử HTTP + sockets + PostgreSQL + import
-server/migrations/           Schema SQLite lịch sử chỉ dùng công cụ chuyển đổi
+server/migrations/           Migration ảnh PostgreSQL + schema SQLite lịch sử
 docs/                        Báo cáo, slide, ERD, ảnh chạy thật và hướng dẫn
 compose.yml                  PostgreSQL cục bộ + persistent volume
 ```
@@ -241,4 +256,4 @@ Sao lưu PostgreSQL bằng `pg_dump`/pgAdmin; thử khôi phục vào database k
 
 Hiện API realtime phù hợp **một Node instance**; nhiều instance cần Socket.IO adapter (ví dụ Redis). Các chuyển trạng thái marketplace dùng transaction PostgreSQL và advisory lock ngắn chung để bảo toàn điểm/giữ chỗ; đây là lựa chọn đúng đắn cho quy mô đồ án, cần đo tải và tối ưu khóa khi mở rộng.
 
-Chưa có thanh toán/giữ tiền, bán PDF, tải ảnh thật, email xác minh/reset hoặc push notification khi app đóng. Chatbot là FAQ có chuyển tiếp người hỗ trợ, chưa dùng LLM. Điểm/sao không chứng minh việc thanh toán/giao nhận ngoài đời; cơ chế giới hạn điểm giảm lạm dụng nhưng chưa thay thế chống gian lận thực tế. Có phân trang chat; các danh sách khác hiện giới hạn số bản ghi, chưa phải hệ thống quy mô lớn.
+Chưa có thanh toán/giữ tiền, bán PDF, email xác minh/reset hoặc push notification khi app đóng. Chatbot là FAQ có chuyển tiếp người hỗ trợ, chưa dùng LLM. Điểm/sao không chứng minh việc thanh toán/giao nhận ngoài đời; cơ chế giới hạn điểm giảm lạm dụng nhưng chưa thay thế chống gian lận thực tế. Có phân trang chat; các danh sách khác hiện giới hạn số bản ghi, chưa phải hệ thống quy mô lớn.

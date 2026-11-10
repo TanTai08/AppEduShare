@@ -6,6 +6,10 @@ export function supportAnswer(message) {
     .toLowerCase();
   const answers = [
     [
+      /tai anh|hinh anh|chon anh|anh tai lieu|photo/,
+      'Khi đăng hoặc sửa tin, chọn tối đa 5 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 5 MB. Xem trước, xóa hoặc chọn ảnh bìa trước khi lưu. Ảnh được kiểm tra và nén ở server. Bạn có thể dùng điện thoại hoặc máy tính để chọn ảnh.',
+    ],
+    [
       /diem|point|mien phi|doi sach/,
       'Mỗi giao dịch mua bán được cả hai bên xác nhận hoàn thành sẽ thưởng 10 điểm cho mỗi bên. Nhận sách miễn phí cần 20 điểm: trừ khi người bán chấp nhận, hoàn lại nếu hủy. Đổi/tặng không sinh điểm. Để hạn chế tích điểm giả, mỗi cặp chỉ được thưởng 1 lần/24 giờ và mỗi người tối đa 30 điểm/ngày UTC. Xem Ví điểm để đối chiếu lịch sử.',
     ],
@@ -15,7 +19,7 @@ export function supportAnswer(message) {
     ],
     [
       /map|ban do|vi tri|chi duong|dia chi/,
-      'Người bán chọn điểm hẹn công khai khi đăng sách. Mở chi tiết, xem bản đồ rồi nhấn “Chỉ đường” để mở ứng dụng bản đồ. Không có theo dõi vị trí trực tiếp; nên chọn thư viện/cổng trường thay vì địa chỉ nhà.',
+      'Bản đồ đã được bỏ. Người bán ghi địa điểm giao nhận bằng chữ khi đăng sách. Bạn mở chi tiết và nhắn người bán để thống nhất giờ nhận; nên hẹn tại thư viện hoặc cổng trường.',
     ],
     [
       /danh gia|uy tin|sao/,
@@ -27,7 +31,7 @@ export function supportAnswer(message) {
     ],
     [
       /dang tin|dang sach|ban sach/,
-      'Nhấn “Đăng sách”, nhập tên, mô tả, môn, giá hoặc hình thức đổi/miễn phí, rồi ghim điểm hẹn. Tin miễn phí có mức nhận 20 điểm. Chỉ đăng tài liệu bạn có quyền chuyển nhượng.',
+      'Nhấn “Đăng sách”, nhập tên, mô tả, môn, giá hoặc hình thức đổi/miễn phí, thêm ảnh và ghi địa điểm giao nhận bằng chữ. Tin miễn phí có mức nhận 20 điểm. Chỉ đăng tài liệu bạn có quyền chuyển nhượng.',
     ],
     [
       /mat khau|dang nhap|tai khoan/,
@@ -38,11 +42,11 @@ export function supportAnswer(message) {
   return {
     answer:
       match?.[1] ||
-      'Mình là trợ lý hướng dẫn tự động theo nội dung trợ giúp, chưa phải mô hình AI sinh. Mình hỗ trợ về điểm, mua/đổi sách, chat, bản đồ và uy tín. Nếu cần xử lý trường hợp cụ thể, hãy tạo phiếu để quản trị viên trả lời.',
+      'Mình là trợ lý hướng dẫn tự động theo nội dung trợ giúp, chưa phải mô hình AI sinh. Mình hỗ trợ về điểm, mua/đổi sách, chat, ảnh tài liệu và uy tín. Nếu cần xử lý trường hợp cụ thể, hãy tạo phiếu để quản trị viên trả lời.',
     suggestions: [
       'Cách nhận điểm',
       'Nhắn tin trước khi mua',
-      'Ghim vị trí nhận sách',
+      'Cách thêm ảnh tài liệu',
       'Gửi yêu cầu hỗ trợ',
     ],
     mode: 'faq',
