@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
-import * as Crypto from 'expo-crypto';
+import { createClientMessageId } from '../lib/clientMessageId';
 import { Socket } from 'socket.io-client';
 import {
   api,
@@ -373,9 +373,9 @@ export function RealtimeChat({
     if (sending || !body.trim()) return;
     setSending(true);
     setError('');
-    if (!pending.current || pending.current.body !== body.trim())
-      pending.current = { body: body.trim(), client_id: Crypto.randomUUID() };
     try {
+      if (!pending.current || pending.current.body !== body.trim())
+        pending.current = { body: body.trim(), client_id: createClientMessageId() };
       const m = await api<Message>(`/conversations/${c.id}/messages`, 'POST', pending.current);
       append([m]);
       setBody('');

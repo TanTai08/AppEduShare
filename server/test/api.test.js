@@ -6,6 +6,7 @@ import { once } from 'node:events';
 import { openDb, one, all, atomic, DEFAULT_DATABASE_URL } from '../src/db.js';
 import { migrate } from '../src/migrate.js';
 import { createHttpServer } from '../src/realtime.js';
+import { createClientMessageId } from '../../apps/mobile/lib/clientMessageId.ts';
 let db, adminPool, http, io, base;
 const schema = 'test_' + randomUUID().replaceAll('-', '');
 before(async () => {
@@ -203,7 +204,7 @@ test('Chat exists BEFORE purchasing; membership, idempotency and cursor history'
     (await call(`/conversations/${c.id}/messages`, 'GET', undefined, x.token)).status,
     403,
   );
-  const body = { body: 'Hỏi trước khi mua', client_id: randomUUID() };
+  const body = { body: 'Hỏi trước khi mua', client_id: createClientMessageId() };
   assert.equal((await call(`/conversations/${c.id}/messages`, 'POST', body, b.token)).status, 201);
   assert.equal((await call(`/conversations/${c.id}/messages`, 'POST', body, b.token)).status, 201);
   assert.equal(

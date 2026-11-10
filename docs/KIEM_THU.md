@@ -2,6 +2,14 @@
 
 Ngày 10/11/2026. Linux, Node24.22.1, PostgreSQL17 qua Docker, Expo58.0.23, React Native0.88.1, TypeScript6.0.3. Kết quả là môi trường phát triển, không thay thế nghiệm thu trên thiết bị người dùng.
 
+## Bản sửa thiếu native ExpoCrypto — 11/11/2026
+
+- Bỏ static import/dependency expo-crypto, thay client_id của chat bằng mã UUID không bí mật tạo trong JavaScript. Không thay đổi cơ chế mật khẩu/token server.
+- Thêm test chạy khi global crypto không tồn tại; test API PostgreSQL gửi/nhận lại tin sử dụng chính helper mới để kiểm tra hợp đồng UUID và idempotency.
+- **41 test đạt: 18 backend + 23 frontend**. TypeScript, SDK check, export web/iOS/Android đạt.
+- Browser kiểm tra đăng nhập và gửi tin với mã mới; lỗi mạng giữ nội dung và trạng thái nút gửi được khôi phục; retry giữ cùng client_id, người bán nhận realtime.
+- Bundling không thay thế nghiệm thu native. Cần cập nhật code/thư viện, xóa Metro cache bằng --clear và thử lại trong Expo Go trên Pixel 7 của người dùng.
+
 ## Bản sửa kết nối Pixel 7 / web / iPhone
 
 Ngày 10/11/2026, sau bản EduShare 2: **40 test đạt (18 backend + 22 frontend)**. Phần frontend kiểm tra tự chọn API cho Android Studio Emulator, iOS Simulator, điện thoại thật theo Metro LAN, web theo host trình duyệt; hiệu chỉnh cấu hình localhost/10.0.2.2 cũ; giữ override riêng và URL remote; chặn cấu hình chứa credentials; phân biệt timeout/canceled/HTTP401/HTML và JSON hỏng.
@@ -10,7 +18,7 @@ Backend bổ sung test bind cổng đã chiếm: API thứ hai báo lỗi có h�
 
 Browser kiểm tra ô URL thực tế, nút Kiểm tra API, health thành công, mô phỏng mất mạng, khôi phục rồi kiểm tra lại; sai mật khẩu vẫn báo HTTP401 đúng và đăng nhập hợp lệ thành công. Không ghi nhận pageerror. Đây chưa phải nghiệm thu kết nối trên Pixel 7 của người dùng; đường mạng/firewall ở máy Windows vẫn cần kiểm tra bằng health trên thiết bị.
 
-Các kết quả 16 nhóm bên dưới là bản baseline trước khi thêm test kết nối. CI hiện chạy cả 40 test qua npm run check.
+Các kết quả 16 nhóm bên dưới là bản baseline trước khi thêm test kết nối. CI hiện chạy cả 41 test qua npm run check.
 
 ## Kiểm tra tự động
 

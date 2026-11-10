@@ -174,6 +174,12 @@ Nếu .env.local, .env.development.local hoặc biến môi trường đang ghi 
 
 API bị chiếm cổng sẽ báo rõ EADDRINUSE thay vì stack trace không xử lý; không tự tắt chương trình khác hoặc đổi cổng ngầm. Chỉ giữ một terminal API. Nếu cần thay PORT backend, đổi EXPO_PUBLIC_API_PORT hoặc URL frontend tương ứng.
 
+### Expo Go báo Cannot find native module ExpoCrypto
+
+Bản sửa ngày 11/11/2026 bỏ dependency expo-crypto khỏi phần chat. Mã chống gửi trùng tin nhắn được tạo bằng JavaScript thuần, không dùng để xác thực; token/mật khẩu phía server vẫn dùng node:crypto/scrypt. Nếu Expo Go cũ không có ExpoCrypto, việc mở màn hình chat không còn yêu cầu module này.
+
+Dừng Expo bằng Ctrl+C, git pull --ff-only, npm ci, đóng dự án cũ trong Expo Go rồi chạy lại `npm run android -w apps/mobile -- --clear`. Giữ API đang chạy ở terminal riêng. Không cần xóa PostgreSQL, seed hoặc import lại. Nếu app đã mở, địa chỉ API trên Android Studio Emulator cần là http://10.0.2.2:4000; nhấn Kiểm tra API để xác nhận kết nối, không suy ra kết nối thành công chỉ từ việc nhìn thấy URL.
+
 ## 6. Demo và kiểm tra database
 
 Sau seed, ba tài khoản dùng mật khẩu **`EduShare123!`**:
@@ -206,7 +212,7 @@ PostgreSQL cần đang chạy; test tạo **schema tạm riêng** và xóa schem
 
 ```powershell
 npm.cmd test
-# Bao gồm test backend PostgreSQL và 22 test kết nối frontend
+# Bao gồm test backend PostgreSQL và 23 test frontend (kết nối và mã tin nhắn)
 npm.cmd run check
 npm.cmd run check:sdk -w apps/mobile
 npm.cmd run build:native -w apps/mobile
