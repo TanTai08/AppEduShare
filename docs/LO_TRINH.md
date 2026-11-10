@@ -1,41 +1,36 @@
-# Lộ trình hoàn thiện và nghiệm thu
+# Trạng thái EduShare 2 và lộ trình
 
-## Những bước đã có trong repository
+## Đã hiện thực
 
-| Bước              | Sản phẩm bàn giao                                                     |
-| ----------------- | --------------------------------------------------------------------- |
-| Phân tích yêu cầu | Phạm vi, tác nhân, quy tắc nghiệp vụ trong báo cáo                    |
-| Thiết kế          | Sơ đồ kiến trúc, ERD, vòng đời giao dịch                              |
-| Database          | SQL có khóa ngoại, index, kiểm tra và seed idempotent                 |
-| Backend           | API xác thực, tin đăng, giao dịch, tin nhắn, đánh giá, quản trị       |
-| Frontend          | React Native/Expo với bố cục desktop và điện thoại                    |
-| Kiểm thử          | Test tích hợp HTTP, typecheck và web build; kết quả trong KIEM_THU.md |
-| Tài liệu          | Hướng dẫn VS Code, API, database, kịch bản bảo vệ                     |
-| Quản lý mã        | GitHub, lockfile npm và workflow CI                                   |
+- PostgreSQL: schema có version, pool, transactions, prepared queries, compose local và import SQLite chỉ đọc.
+- Socket.IO: xác thực, room riêng, chat trước mua, typing, unread, cursor, idempotency, reconnect/catch-up.
+- Điểm: +10 mỗi bên cho completed sell; 20 nhận free; trừ ở accept, refund khi hủy, sổ điểm, unique và cap/cooldown.
+- Bản đồ: Leaflet đóng gói, pin, tọa độ thủ công, điểm hẹn công khai, link chỉ đường, attribution.
+- Hồ sơ public: bio, sao, nhận xét theo giao dịch, số lần hoàn thành; ẩn dữ liệu riêng tư.
+- Hỗ trợ: FAQ, phiếu riêng, admin reply/resolve.
+- UI: hộp thư, ví, lối tắt, nút hỗ trợ, safe area và điều hướng mobile.
 
-## Việc người nộp cần thực hiện
+## Việc người dùng cần thực hiện để chạy bản mới
 
-1. Điền trường/khoa, họ tên, mã sinh viên, lớp, giảng viên và học kỳ trong báo cáo.
-2. Chạy trên máy của mình theo README, chụp kết quả thực tế; không dùng số liệu kiểm thử giả lập như số liệu người dùng thật.
-3. Chạy Android Emulator hoặc thiết bị Android; kiểm thử iOS nếu có macOS/Xcode. Ghi model thiết bị, hệ điều hành và kết quả.
-4. Rà soát format báo cáo theo mẫu của trường, bổ sung nhận xét và phần công việc cá nhân thực tế.
-5. Thực hiện kịch bản demo; tạo slide từ đề cương đã cung cấp.
+1. Cập nhật Git, npm ci; mở Docker Desktop hoặc PostgreSQL native.
+2. Thêm DATABASE_URL vào server/.env. Chọn import dữ liệu cũ hoặc seed database mới.
+3. Giữ EXPO_PUBLIC_API_URL theo thiết bị, chạy API và Expo, kiểm tra health.
+4. Nghiệm thu trên iPhone/Android: safe area, bàn phím, Socket.IO reconnect, WebView map và quyền mạng.
+5. Chọn tile provider được phép và cấu hình attribution/quota nếu OpenStreetMap công cộng không phù hợp.
+6. Điền thông tin cá nhân/giảng viên, cập nhật kết quả chạy trên máy trong báo cáo.
 
-## Mở rộng sau MVP
+## Phát triển sau phiên bản này
 
-| Ưu tiên | Hạng mục                           | Tiêu chí hoàn thành                                             |
-| ------- | ---------------------------------- | --------------------------------------------------------------- |
-| P1      | Xác minh email, đổi/reset mật khẩu | Token một lần có hạn dùng, email thử nghiệm và giới hạn gửi     |
-| P1      | Tải ảnh thật                       | Kiểm tra MIME/chữ ký file, giới hạn dung lượng, xóa ảnh mồ côi  |
-| P1      | Audit log và quản lý tài khoản     | Ghi người thao tác, thời điểm, lý do; quy trình khóa/mở rõ ràng |
-| P1      | Trang hóa dữ liệu                  | Cursor cho chat, tải thêm tin, chỉ số không bỏ sót/trùng        |
-| P1      | Kiểm thử native                    | Luồng chính trên Android/iOS, bàn phím, safe area, mạng yếu     |
-| P2      | PostgreSQL và nhiều API instance   | Migration, row locks, kiểm thử cạnh tranh và khôi phục backup   |
-| P2      | WebSocket/SSE                      | Xác thực kênh riêng, reconnect, chống gửi trùng                 |
-| P2      | Thông báo đẩy                      | Quyền thiết bị, token push, tùy chọn nhận thông báo             |
-| P2      | Danh mục trường/môn chuẩn hóa      | Khóa ngoại, tìm kiếm không dấu và gợi ý nhập                    |
-| P3      | File số hợp pháp                   | Quyền phân phối, file riêng tư, URL ký hạn dùng, thu hồi quyền  |
-| P3      | Thanh toán trực tuyến              | Sandbox gateway, webhook xác minh, idempotency, hoàn tiền       |
-| P3      | Giao vận và khoảng cách            | Quyền vị trí, điểm hẹn công khai, bảo vệ địa chỉ cá nhân        |
+| Ưu tiên | Hạng mục                           | Tiêu chí nghiệm thu                                                             |
+| ------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| P1      | Email xác minh/reset, đổi mật khẩu | Token dùng một lần, hết hạn, giới hạn gửi                                       |
+| P1      | Ảnh thật                           | Kiểm tra MIME/signature/dung lượng, lưu trữ có phân quyền                       |
+| P1      | Chống gian lận điểm                | Theo dõi bất thường, giới hạn tài khoản và quy trình tranh chấp                 |
+| P1      | Đo tải PostgreSQL                  | Giảm phạm vi advisory lock khi có số liệu, giữ bất biến bằng test nhiều kết nối |
+| P1      | Nhiều Node instances               | Socket.IO Redis adapter, invalidation phiên trên mọi instance                   |
+| P2      | Push khi app đóng                  | Token thiết bị, tùy chọn nhận, retry/idempotency                                |
+| P2      | Bot AI có căn cứ                   | RAG từ tài liệu trợ giúp, kiểm soát dữ liệu, fallback và đánh giá câu trả lời   |
+| P2      | Danh mục chuẩn/tìm không dấu       | Danh mục trường/môn, chỉ mục phù hợp                                            |
+| P3      | Thanh toán/file số                 | Quyền phân phối, webhook xác minh, hoàn tiền, truy cập file riêng tư            |
 
-Thời gian ước lượng bản mở rộng phải được lập sau khi chốt nhóm, ngân sách và yêu cầu nghiệm thu; không xem các hạng mục trên là đã triển khai.
+Không gọi các hạng mục trong bảng này là đã có. Đo tải, bảo mật độc lập và nghiệm thu native vẫn là bước triển khai thực tế.

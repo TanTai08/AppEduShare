@@ -1,136 +1,100 @@
-# Thiết kế cơ sở dữ liệu EduShare
+# PostgreSQL — Thiết kế và chuyển dữ liệu EduShare 2
 
-## Lựa chọn và khởi tạo
+## Nguồn chuẩn
 
-SQLite là cơ sở dữ liệu quan hệ nhúng, phù hợp trình diễn offline, không yêu cầu cài dịch vụ database. Chỉ API truy cập database. Node.js 24 cung cấp `node:sqlite`; `npm run db:seed` tạo schema và dữ liệu mẫu. Nguồn chuẩn của cấu trúc là [`server/src/schema.sql`](../server/src/schema.sql).
+`server/src/schema.sql` là schema PostgreSQL 17+; `src/migrate.js` áp dụng migration version 1 trong bảng `schema_migrations`. Migration chạy trong transaction có advisory lock; không tự xóa bảng. Version này là khởi tạo **database PostgreSQL mới**, không phải lệnh thay đổi file SQLite.
 
-Database lưu tại `server/data/edushare.sqlite` theo mặc định. `DB_PATH` là đường dẫn tương đối với thư mục `server` khi chạy bằng npm workspace. Không commit file database. Nếu cần database sạch, dừng API, sao lưu thư mục data, rồi chọn một `DB_PATH` mới và chạy seed; không cần xóa database cũ.
+Có **14 bảng nghiệp vụ** và bảng theo dõi migration:
 
-## Sơ đồ ERD
+| Bảng             | Nội dung và ràng buộc chính                                                             |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| users            | UUID; email duy nhất không phân biệt hoa thường; password hash; bio; points >= 0        |
+| sessions         | SHA-256 token; user; thời hạn 7 ngày                                                    |
+| listings         | Chủ tin, nội dung, giá, hình thức, point_cost, trạng thái, điểm hẹn và tọa độ           |
+| favorites        | Khóa ghép user/tin, không lưu trùng                                                     |
+| conversations    | Một cuộc trò chuyện theo tin và người hỏi; có thể tạo trước giao dịch                   |
+| messages         | UUID, seq identity, conversation, sender, client_id; unique(sender, client_id)          |
+| transactions     | Hai bên, một/hai tài liệu, conversation, snapshot giá/hình thức/điểm, xác nhận hai phía |
+| reviews          | Rating 1–5; unique(transaction, author); target khác author                             |
+| reports          | Báo cáo tin, người gửi, trạng thái xử lý                                                |
+| notifications    | Thông báo riêng, read_at                                                                |
+| point_ledger     | Delta, balance_after, reason, transaction; unique(user, transaction, reason)            |
+| support_tickets  | Chủ phiếu, tiêu đề và trạng thái                                                        |
+| support_messages | Trao đổi riêng giữa chủ phiếu và admin                                                  |
+| audit_logs       | Người thao tác, hành động, đối tượng, thời điểm                                         |
 
 ```mermaid
 erDiagram
- USERS ||--o{ SESSIONS : authenticates
  USERS ||--o{ LISTINGS : owns
+ USERS ||--o{ SESSIONS : authenticates
  USERS ||--o{ FAVORITES : saves
- LISTINGS ||--o{ FAVORITES : saved_by
- USERS ||--o{ TRANSACTIONS : buys_or_sells
- LISTINGS ||--o{ TRANSACTIONS : requested_or_offered
- TRANSACTIONS ||--o{ MESSAGES : contains
+ LISTINGS ||--o{ FAVORITES : receives
+ LISTINGS ||--o{ CONVERSATIONS : discussed
+ USERS ||--o{ CONVERSATIONS : participates
+ CONVERSATIONS ||--o{ MESSAGES : contains
  USERS ||--o{ MESSAGES : sends
- TRANSACTIONS ||--o{ REVIEWS : receives
- USERS ||--o{ REVIEWS : writes_or_receives
- USERS ||--o{ REPORTS : submits
+ CONVERSATIONS ||--o{ TRANSACTIONS : concerns
+ LISTINGS ||--o{ TRANSACTIONS : requested_or_offered
+ USERS ||--o{ TRANSACTIONS : buys_or_sells
+ TRANSACTIONS ||--o{ REVIEWS : reviewed
+ USERS ||--o{ REVIEWS : gives_or_receives
+ TRANSACTIONS |o--o{ POINT_LEDGER : source
+ USERS ||--o{ POINT_LEDGER : wallet_history
+ USERS ||--o{ SUPPORT_TICKETS : requests
+ SUPPORT_TICKETS ||--o{ SUPPORT_MESSAGES : contains
+ USERS ||--o{ SUPPORT_MESSAGES : replies
  LISTINGS ||--o{ REPORTS : reported
+ USERS ||--o{ REPORTS : reports
  USERS ||--o{ NOTIFICATIONS : receives
- TRANSACTIONS |o--o{ NOTIFICATIONS : concerns
- USERS {
-  TEXT id PK
-  TEXT email UK
-  TEXT password_hash
-  TEXT role
-  TEXT school
-  TEXT area
- }
- LISTINGS {
-  TEXT id PK
-  TEXT owner_id FK
-  TEXT title
-  TEXT subject
-  TEXT kind
-  INTEGER price
-  TEXT status
-  INTEGER moderated
- }
- TRANSACTIONS {
-  TEXT id PK
-  TEXT listing_id FK
-  TEXT offered_listing_id FK
-  TEXT buyer_id FK
-  TEXT seller_id FK
-  TEXT status
-  INTEGER buyer_confirmed
-  INTEGER seller_confirmed
- }
+ USERS ||--o{ AUDIT_LOGS : moderates
 ```
 
-Quan hệ `offered_listing_id` có thể rỗng khi mua hoặc nhận tặng. Đổi tài liệu là một giao dịch với hai tin đăng; chủ tài liệu được hỏi là seller, người gửi đề nghị là buyer. Đây là tên kỹ thuật dùng chung cho cả ba hình thức, không hàm ý có thanh toán trong app.
+## Điểm và giữ chỗ
 
-## Từ điển dữ liệu
+Quy tắc: +10 điểm mỗi bên khi mua bán hoàn thành; nhận sách free cần 20 điểm; trừ lúc accepted và hoàn nếu cancelled. Không cộng điểm exchange/free. Mỗi cặp tối đa một lần thưởng/24 giờ; mỗi người tối đa 30 điểm/ngày UTC. Quy tắc đặt trong `domain.js` và hiển thị trên UI/FAQ.
 
-| Bảng          | Khóa và trường đáng chú ý                                                                                              | Quy tắc                                                        |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| users         | id UUID, name, email, password_hash, school, area, role, created_at                                                    | Email duy nhất không phân biệt hoa thường; role student/admin  |
-| sessions      | token_hash PK, user_id FK, expires_at                                                                                  | Chỉ lưu SHA-256 token; hết hạn sau 7 ngày                      |
-| listings      | id UUID, owner_id FK, title, description, subject, school, area, kind, price, condition, status, moderated, created_at | Giá nguyên VNĐ, không âm; moderated khóa tin bị kiểm duyệt     |
-| favorites     | user_id + listing_id PK                                                                                                | Không lưu trùng cùng một tài liệu                              |
-| transactions  | id UUID, listing_id, buyer_id, seller_id, offered_listing_id, note, status, hai cờ xác nhận                            | Buyer khác seller; mỗi buyer chỉ có một yêu cầu mở cho mỗi tin |
-| messages      | id, transaction_id, sender_id, body, created_at                                                                        | Chỉ thành viên giao dịch được đọc/ghi qua API                  |
-| reviews       | id, transaction_id, author_id, target_id, rating, comment, created_at                                                  | 1–5 sao; unique(transaction_id, author_id)                     |
-| reports       | id, reporter_id, listing_id, reason, status, created_at                                                                | open/resolved                                                  |
-| notifications | id, user_id, body, transaction_id, read_at, created_at                                                                 | Chỉ chủ thông báo được xem và đánh dấu đã đọc                  |
+Các chuyển trạng thái dùng PostgreSQL transaction. Advisory lock `pg_advisory_xact_lock(208811,2)` tuần tự hóa ngắn các thay đổi marketplace trên các kết nối/API dùng cùng DB. Trong transaction vẫn khóa giao dịch/tài liệu/ví khi cần. Kiểm tra điều kiện, cập nhật trạng thái, số dư, sổ điểm và thông báo nằm cùng transaction; lỗi thì rollback. Sự kiện Socket.IO chỉ phát sau commit.
 
-Các trường bắt buộc được khai báo `NOT NULL` trong SQL. Mọi khóa ngoại được kiểm tra bằng `PRAGMA foreign_keys=ON`. Thời gian lưu theo UTC dạng ISO 8601, giao diện hiển thị theo múi giờ thiết bị.
+Điểm không chuyển cho người cho sách: nhận sách tiêu thụ điểm, khi hủy hệ thống hoàn về người nhận. Unique ledger chống thưởng/trừ/hoàn lặp. Số dư user là bản tổng hợp; invariant kiểm thử: `users.points = SUM(point_ledger.delta)`.
 
-## Vòng đời giao dịch
+Snapshot `transactions.kind/price/point_cost` giữ điều kiện lúc yêu cầu. Nếu người đăng sửa giá/hình thức khi còn pending, accept bị từ chối để người mua gửi lại. Khi một bên đã xác nhận giao nhận, người dùng không được tự hủy; admin xử lý qua hỗ trợ/kiểm duyệt. Đây chưa phải hệ thống escrow hoặc chứng nhận thanh toán ngoài đời.
 
-```mermaid
-stateDiagram-v2
- [*] --> pending: Gửi yêu cầu
- pending --> accepted: Chủ tin chấp nhận / giữ chỗ
- pending --> cancelled: Hủy hoặc bị trùng tài liệu
- accepted --> accepted: Một bên xác nhận
- accepted --> completed: Cả hai xác nhận
- accepted --> cancelled: Một bên hủy / quản trị ẩn tin
- completed --> [*]
- cancelled --> [*]
-```
+## Chat và realtime
 
-Khi chấp nhận:
+Tin nhắn gắn conversation, không phụ thuộc đã có đơn mua. REST kiểm tra thành viên trước đọc/ghi; Socket.IO xác thực token và chỉ gửi vào room do server gán theo user ID. Client không tự join room tùy ý.
 
-1. Mở transaction SQL bằng `BEGIN IMMEDIATE`.
-2. Kiểm tra người thao tác là seller, giao dịch pending và tất cả tài liệu active.
-3. Đánh dấu một hoặc hai tài liệu reserved.
-4. Chuyển giao dịch sang accepted.
-5. Hủy các yêu cầu pending liên quan đến bất kỳ tài liệu nào vừa giữ chỗ.
-6. Tạo thông báo và commit; nếu có lỗi thì rollback.
+Tin được lưu trước khi phát. `client_id` giúp gửi lại sau lỗi mạng không tạo trùng. `seq BIGINT` làm cursor; trả tối đa 100 tin mỗi request. UI tải 50 tin cuối, tải thêm tin cũ hoặc đồng bộ các tin sau seq cuối khi reconnect. seq được truyền dạng chuỗi để tránh mất chính xác số nguyên lớn.
 
-SQLite tuần tự hóa ghi trên cùng database. Vì kiểm tra và cập nhật nằm trong cùng transaction, hai yêu cầu chấp nhận không thể cùng giữ một tài liệu. Không chỉ dựa vào việc vô hiệu hóa nút giao diện.
+Cột `buyer_read_at/seller_read_at` phục vụ số chưa đọc. Logout thu hồi phiên và ngắt socket của phiên đó; socket hết hạn được kiểm tra định kỳ. Deployment hiện dùng một Node instance; nhiều instance cần adapter/bus (ví dụ Redis), không tự có chỉ nhờ PostgreSQL.
 
-Khi hủy accepted, chỉ trả các tài liệu reserved về active. Khi cả hai xác nhận, cả hai tài liệu trong giao dịch đổi được chuyển completed. Các yêu cầu tự hủy trước đó không tự mở lại.
+## Vị trí và hồ sơ
 
-## Truy vấn minh họa
+Listing lưu latitude/longitude cùng nhau, kiểm tra miền [-90,90], [-180,180], hoặc cả hai NULL. Đây là điểm hẹn công khai người bán tự chọn. Không có bảng lịch sử GPS.
+
+Hồ sơ public chỉ trả tên, trường/khu vực, bio, ngày tham gia, sao, số đánh giá, số giao dịch và sách active. Không trả email, password hash, session hoặc số dư. Badge “Được cộng đồng đánh giá cao” cần ít nhất 5 nhận xét, trung bình >=4,5 sao; không gọi là xác minh danh tính.
+
+## Import SQLite cũ
+
+1. Dừng API cũ, sao lưu `server/data/` nhất quán.
+2. Tạo database PostgreSQL rỗng, đặt DATABASE_URL, chạy `npm run db:migrate`.
+3. Chạy `npm run db:import:sqlite` từ thư mục gốc.
+4. Kiểm tra số lượng, đăng nhập, lịch sử giao dịch và chat.
+
+Nguồn mặc định là `server/data/edushare.sqlite`, mở chỉ đọc. Công cụ giữ ID/password hash, chuyển các tin nhắn theo transaction sang conversation, giữ nội dung và thứ tự thời gian. Điểm khởi tạo 0, không thưởng hồi tố. Giao dịch free đã accepted trước import không bị trừ điểm hồi tố. Các snapshot giao dịch cũ được suy ra từ tin đăng hiện có vì SQLite v1 chưa lưu snapshot; đây là giới hạn dữ liệu nguồn.
+
+Import trong một transaction, kiểm tra database đích chưa có users và từ chối chạy lại. Không gộp tự động database đã seed. Thiếu dữ liệu hoặc lỗi FK thì rollback. SQLite nguồn không bị xóa; `server/migrations/legacy-sqlite.sql` chỉ lưu cấu trúc lịch sử phục vụ kiểm thử importer, không dùng chạy ứng dụng.
+
+## Xem và sao lưu
+
+Dùng pgAdmin hoặc extension PostgreSQL trong VS Code, kết nối theo `server/.env`. Schema mặc định public. Query ví dụ:
 
 ```sql
--- Tài liệu đang đăng tại Đà Nẵng
-SELECT title, kind, price, school FROM listings
-WHERE status = 'active' AND area = 'Đà Nẵng'
-ORDER BY created_at DESC;
-
--- Điểm uy tín theo người dùng
-SELECT u.id, u.name, COUNT(r.id) AS review_count, ROUND(AVG(r.rating),1) AS rating
-FROM users u LEFT JOIN reviews r ON r.target_id = u.id
-GROUP BY u.id, u.name;
-
--- Số giao dịch theo trạng thái
-SELECT status, COUNT(*) AS total FROM transactions GROUP BY status;
+SELECT name, points FROM users ORDER BY name;
+SELECT reason, delta, balance_after, created_at FROM point_ledger ORDER BY created_at DESC;
+SELECT status, count(*) FROM transactions GROUP BY status;
+SELECT c.id,l.title,count(m.id) FROM conversations c
+JOIN listings l ON l.id=c.listing_id LEFT JOIN messages m ON m.conversation_id=c.id
+GROUP BY c.id,l.title;
 ```
 
-## Hiệu năng và giới hạn
-
-- Index theo trạng thái/khu vực/trường; index tin nhắn theo giao dịch/thời gian; unique index cho yêu cầu đang mở.
-- Danh sách công khai hỗ trợ limit tối đa 100 và offset. UI MVP lấy tối đa 60 tin; chưa có nút tải thêm.
-- Tìm kiếm LIKE có escape ký tự `%`, `_` và dùng prepared statements; SQLite LIKE mặc định chưa bảo đảm tìm không dấu hoặc đầy đủ chữ hoa/thường tiếng Việt. Có thể bổ sung cột chuẩn hóa hoặc FTS.
-- Chat hiện trả tối đa 500 tin đầu tiên; cần phân trang/cursor cho sử dụng lâu dài.
-- WAL hỗ trợ đọc trong lúc ghi nhưng không biến SQLite thành hệ thống nhiều writer phân tán.
-
-## Chuyển PostgreSQL khi mở rộng
-
-1. Tạo migration PostgreSQL: UUID, timestamptz, enum/check và khóa ngoại.
-2. Đổi adapter SQLite đồng bộ sang driver PostgreSQL bất đồng bộ.
-3. Thay tham số `?` bằng `$1...`, thay hàm thời gian và cú pháp index phù hợp.
-4. Khóa bản ghi tài liệu bằng `SELECT ... FOR UPDATE` theo thứ tự ID cố định.
-5. Chạy lại toàn bộ kiểm thử, bổ sung test cạnh tranh trên nhiều kết nối.
-6. Xuất/nhập dữ liệu có kiểm tra số lượng và quan hệ; kiểm thử backup/restore.
-
-Không có kết nối Supabase/PostgreSQL được cấu hình sẵn trong phiên bản này.
+Sao lưu bằng pg_dump/pgAdmin và thử restore vào DB khác. Volume Docker giữ dữ liệu qua stop/start; `down -v` xóa volume, vì vậy không dùng để cập nhật mã. Mật khẩu compose là mẫu local, không dùng production.

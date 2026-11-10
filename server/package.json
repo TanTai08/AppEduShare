@@ -1,19 +1,26 @@
 {
   "name": "@edushare/server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "node --watch --env-file-if-exists=.env src/index.js",
     "start": "node --env-file-if-exists=.env src/index.js",
     "seed": "node --env-file-if-exists=.env src/seed.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --env-file-if-exists=.env --test test/*.test.js",
+    "migrate": "node --env-file-if-exists=.env src/migrate.js",
+    "import:sqlite": "node --env-file-if-exists=.env src/import-sqlite.js"
   },
   "dependencies": {
     "express": "^5.1.0",
     "cors": "^2.8.5",
     "helmet": "^8.1.0",
     "express-rate-limit": "^8.1.0",
-    "zod": "^4.1.12"
+    "zod": "^4.1.12",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "socket.io-client": "^4.8.1"
   }
 }

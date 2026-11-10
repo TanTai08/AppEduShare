@@ -7,3 +7,5 @@ data
 *.docx
 *.pptx
 docs/images
+
+apps/mobile/components/vendor/leafletAssets.ts

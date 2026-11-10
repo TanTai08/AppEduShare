@@ -1,21 +1,27 @@
-import { DatabaseSync } from 'node:sqlite';
-import { mkdirSync, readFileSync } from 'node:fs';
-import { dirname } from 'node:path';
-export function openDb(path = process.env.DB_PATH || './data/edushare.sqlite') {
-  if (path !== ':memory:') mkdirSync(dirname(path), { recursive: true });
-  const db = new DatabaseSync(path);
-  db.exec('PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;');
-  db.exec(readFileSync(new URL('./schema.sql', import.meta.url), 'utf8'));
-  return db;
+import pg from 'pg';
+const { Pool } = pg;
+export const DEFAULT_DATABASE_URL = 'postgresql://edushare:edushare_dev@localhost:5432/edushare';
+export function openDb(
+  connectionString = process.env.DATABASE_URL || DEFAULT_DATABASE_URL,
+  options = {},
+) {
+  return new Pool({ connectionString, max: 10, connectionTimeoutMillis: 5000, ...options });
 }
-export function atomic(db, fn) {
-  db.exec('BEGIN IMMEDIATE');
-  try {
-    const value = fn();
-    db.exec('COMMIT');
-    return value;
-  } catch (e) {
-    db.exec('ROLLBACK');
-    throw e;
+export const one = async (db, sql, args = []) => (await db.query(sql, args)).rows[0];
+export const all = async (db, sql, args = []) => (await db.query(sql, args)).rows;
+export async function atomic(pool, fn) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const db = await pool.connect();
+    try {
+      await db.query('BEGIN');
+      const result = await fn(db);
+      await db.query('COMMIT');
+      return result;
+    } catch (e) {
+      await db.query('ROLLBACK');
+      if (!['40P01', '40001'].includes(e.code) || attempt === 2) throw e;
+    } finally {
+      db.release();
+    }
   }
 }

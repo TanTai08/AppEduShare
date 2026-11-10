@@ -1,51 +1,44 @@
-# API EduShare
+# EduShare 2 — API và sự kiện realtime
 
-Base URL cục bộ: `http://localhost:4000/api`. Request/response dùng JSON UTF-8. Các endpoint riêng tư yêu cầu header `Authorization: Bearer <token>` từ login/register. Không đưa token vào URL.
+Base URL: `http://localhost:4000/api`. JSON UTF-8. Endpoint riêng tư dùng `Authorization: Bearer <token>`. Mọi ID là UUID. Lỗi có `{error: string}` và mã 400/401/403/404/409/413/429/500.
 
-| Method    | Đường dẫn                  | Quyền      | Mục đích                                       |
-| --------- | -------------------------- | ---------- | ---------------------------------------------- |
-| GET       | /health                    | Công khai  | Kiểm tra API và DB                             |
-| POST      | /auth/register             | Công khai  | Tạo tài khoản student và phiên                 |
-| POST      | /auth/login                | Công khai  | Xác thực và tạo phiên                          |
-| POST      | /auth/logout               | Đăng nhập  | Thu hồi phiên hiện tại                         |
-| GET/PATCH | /me                        | Đăng nhập  | Xem/sửa name, school, area                     |
-| GET       | /listings                  | Công khai  | Danh sách đang active                          |
-| GET       | /listings/:id              | Công khai  | Chi tiết tin không hidden, nhận xét người đăng |
-| POST      | /listings                  | Đăng nhập  | Đăng tin                                       |
-| PATCH     | /listings/:id              | Chủ tin    | Sửa tin active/hidden chưa bị khóa             |
-| POST      | /listings/:id/visibility   | Chủ tin    | Ẩn/hiện tin chưa bị khóa                       |
-| GET       | /my/listings               | Đăng nhập  | Tin của chính mình                             |
-| GET       | /favorites                 | Đăng nhập  | Danh sách yêu thích                            |
-| POST      | /favorites/:id             | Đăng nhập  | Toggle yêu thích                               |
-| POST      | /transactions              | Đăng nhập  | Gửi yêu cầu mua/đổi/nhận                       |
-| GET       | /transactions              | Đăng nhập  | Giao dịch của mình                             |
-| POST      | /transactions/:id/action   | Thành viên | accept/cancel/confirm                          |
-| GET/POST  | /transactions/:id/messages | Thành viên | Đọc/gửi tin nhắn                               |
-| POST      | /transactions/:id/reviews  | Thành viên | Đánh giá sau completed                         |
-| GET       | /notifications             | Đăng nhập  | Tối đa 100 thông báo của mình                  |
-| POST      | /notifications/read        | Đăng nhập  | Đánh dấu tất cả đã đọc                         |
-| POST      | /reports                   | Đăng nhập  | Báo cáo tin đăng                               |
-| GET       | /admin                     | Admin      | Thống kê, 100 báo cáo/tin mới nhất             |
-| POST      | /admin/reports/:id/resolve | Admin      | Đóng báo cáo                                   |
-| POST      | /admin/listings/:id/hide   | Admin      | Khóa tin vi phạm, hủy giao dịch mở             |
+| Method    | Endpoint                      | Quyền / mục đích                                       |
+| --------- | ----------------------------- | ------------------------------------------------------ |
+| GET       | /health                       | Public, xác nhận engine PostgreSQL                     |
+| POST      | /auth/register, /auth/login   | Public, tạo phiên                                      |
+| POST      | /auth/logout                  | Thu hồi phiên và socket của phiên                      |
+| GET/PATCH | /me                           | Hồ sơ riêng, bio; không nhận role/points               |
+| GET       | /users/:id                    | Hồ sơ công khai, sao, nhận xét, tin active             |
+| GET       | /wallet                       | Số dư, quy tắc, 100 bản ghi điểm gần nhất              |
+| GET/POST  | /listings                     | Public đọc, đăng nhập để đăng                          |
+| GET/PATCH | /listings/:id                 | Public đọc; chỉ chủ tin sửa active/hidden chưa bị khóa |
+| POST      | /listings/:id/visibility      | Chủ tin ẩn/hiện, không vượt kiểm duyệt                 |
+| GET       | /my/listings                  | Tin của mình                                           |
+| GET       | /favorites                    | Yêu thích riêng                                        |
+| POST      | /favorites/:id                | Toggle yêu thích                                       |
+| POST      | /conversations                | Tạo/lấy cuộc trò chuyện trước mua                      |
+| GET       | /conversations                | 100 cuộc gần nhất, last_message và unread              |
+| GET/POST  | /conversations/:id/messages   | Thành viên; phân trang/gửi tin                         |
+| POST      | /conversations/:id/read       | Đánh dấu đã đọc                                        |
+| GET/POST  | /transactions                 | Danh sách riêng / gửi yêu cầu                          |
+| POST      | /transactions/:id/action      | accept/cancel/confirm                                  |
+| POST      | /transactions/:id/reviews     | Thành viên, chỉ khi completed, mỗi bên một lần         |
+| GET       | /notifications                | Thông báo riêng                                        |
+| POST      | /notifications/read           | Đánh dấu tất cả đã đọc                                 |
+| POST      | /reports                      | Báo cáo tin                                            |
+| POST      | /support/chat                 | Public, trả lời FAQ có rate limit                      |
+| GET/POST  | /support/tickets              | Phiếu riêng; admin xem tất cả                          |
+| GET/POST  | /support/tickets/:id/messages | Chủ phiếu hoặc admin                                   |
+| GET       | /admin                        | Admin, thống kê/báo cáo/tin                            |
+| POST      | /admin/listings/:id/hide      | Khóa tin, hủy giao dịch liên quan, hoàn điểm, audit    |
+| POST      | /admin/reports/:id/resolve    | Admin đóng báo cáo, audit                              |
+| POST      | /admin/support/:id/resolve    | Admin đóng phiếu                                       |
 
-## Payload
+## Payload chính
 
-Đăng ký:
+Đăng ký: `{name,email,password,school,area}`; mật khẩu 8–128 ký tự. Login: `{email,password}`. Trả `{token,user}`. User mới có 0 điểm. PATCH /me nhận `{name,school,area,bio}`.
 
-```json
-{
-  "name": "Nguyễn Văn A",
-  "email": "a@example.com",
-  "password": "Password123!",
-  "school": "VKU",
-  "area": "Đà Nẵng"
-}
-```
-
-Đăng nhập: `{"email":"a@example.com","password":"Password123!"}`. Cả hai trả `{ "token": "...", "user": {...} }`; không trả password_hash.
-
-Tạo/sửa tài liệu (PATCH nhận đủ các trường như POST):
+Listing:
 
 ```json
 {
@@ -56,31 +49,52 @@ Tạo/sửa tài liệu (PATCH nhận đủ các trường như POST):
   "area": "Đà Nẵng",
   "kind": "sell",
   "price": 50000,
-  "condition": "Như mới"
+  "condition": "Như mới",
+  "pickup_label": "Thư viện trường",
+  "latitude": 16.0544,
+  "longitude": 108.2022
 }
 ```
 
-`kind`: sell/exchange/free. `condition`: Mới/Như mới/Đã sử dụng. Giá bán tối thiểu 1000 VNĐ, tối đa 100000000; đổi/tặng được lưu giá 0.
+Kind sell/exchange/free; condition Mới/Như mới/Đã sử dụng. Giá sell >=1000 và nguyên; exchange/free giá 0. Server tự đặt point_cost=20 cho free; client không được gửi điểm tùy ý. Có thể bỏ tọa độ hoặc gửi cả hai NULL.
 
-Tìm kiếm: `/listings?q=SQL&area=Đà%20Nẵng&school=VKU&kind=sell&sort=price&limit=20&offset=0`. sort: new/price. Kết quả `{items: [...], total: number}`; các danh sách riêng tư khác trả mảng.
+Danh sách: `/listings?q=SQL&area=Đà%20Nẵng&school=VKU&kind=sell&sort=price&limit=20&offset=0`; trả `{items,total}`, limit<=100, sort new/price.
 
-Yêu cầu: `{"listing_id":"UUID","note":"Hẹn thư viện chiều thứ sáu"}`. Với trao đổi, bổ sung `"offered_listing_id":"UUID tài liệu trao đổi của mình"`.
+Tạo conversation: `{listing_id}`. Gửi message:
 
-Thao tác: `{"action":"accept"}` hoặc cancel/confirm. Chỉ seller được accept. confirm là cờ riêng của từng bên, không đồng nghĩa đã thanh toán.
+```json
+{
+  "body": "Mình muốn hỏi trước khi mua, sách còn không?",
+  "client_id": "UUID tạo một lần cho lần gửi"
+}
+```
 
-Tin nhắn: `{"body":"Chào bạn, sách còn không?"}`. Đánh giá: `{"rating":5,"comment":"Giao sách đúng hẹn"}`. Báo cáo: `{"listing_id":"UUID","reason":"Mô tả sai về tài liệu"}`.
+Gửi lại cùng sender/client_id và cùng nội dung trả bản đã lưu; đổi nội dung hoặc conversation với cùng mã bị từ chối. Không nhận sender_id từ client. GET messages nhận `before=<seq>` hoặc `after=<seq>` và `limit` (mặc định50, tối đa100); trả `{items,has_more}`. Không dùng đồng thời before/after.
 
-## Mã lỗi
+Tạo transaction: `{listing_id,note,offered_listing_id?}`; offered bắt buộc với exchange. Action `{action:"accept"|"cancel"|"confirm"}`. Accept free cần đủ điểm; mọi thất bại rollback giữ chỗ và ví. Đánh giá `{rating:1..5,comment}`.
 
-| Mã  | Ý nghĩa                                             |
-| --- | --------------------------------------------------- |
-| 400 | Dữ liệu/JSON không hợp lệ hoặc yêu cầu trái quy tắc |
-| 401 | Không có phiên, phiên hết hạn, sai mật khẩu         |
-| 403 | Không có quyền thao tác hoặc tin bị quản trị khóa   |
-| 404 | Không tìm thấy hoặc tin đã ẩn                       |
-| 409 | Trạng thái thay đổi, yêu cầu trùng, đánh giá trùng  |
-| 413 | JSON vượt 64 KB                                     |
-| 429 | Quá giới hạn yêu cầu                                |
-| 500 | Lỗi máy chủ, không trả chi tiết nội bộ cho client   |
+FAQ `{message}` trả `{answer,suggestions,mode:"faq"}`. Phiếu `{subject,body}`. Phản hồi phiếu `{body}`. Chưa có API LLM hoặc cam kết phản hồi tức thời từ admin.
 
-Lỗi nghiệp vụ có dạng `{"error":"Thông báo tiếng Việt"}`. Middleware rate-limit chung có thể trả văn bản; client cần xử lý tổng quát khi nâng cấp. Login/register giới hạn 30 request/15 phút theo IP; API chung 240 request/phút. Môi trường sau reverse proxy cần cấu hình `trust proxy` phù hợp hệ thống thực tế, không bật tin mọi proxy tùy tiện.
+## Socket.IO
+
+Kết nối vào gốc URL API, không phải `/api` và không phải Metro:
+
+```js
+const socket = io(API_URL, { auth: { token } });
+socket.on('message:new', (message) => {});
+socket.emit('typing', { conversation_id });
+```
+
+| Sự kiện server → client | Dữ liệu                                               |
+| ----------------------- | ----------------------------------------------------- |
+| message:new             | Tin đã commit, có conversation_id, seq và sender_name |
+| conversation:updated    | `{id}` khi tạo/đọc conversation                       |
+| typing                  | `{conversation_id,name}`, chỉ thành viên được phát    |
+| transaction:updated     | `{id}`, tải lại giao dịch                             |
+| notification:new        | Thông báo riêng đã lưu                                |
+| wallet:updated          | `{balance}`, tải lại ví                               |
+| support:new             | `{ticket_id}`, tới chủ phiếu và admin                 |
+
+Server tự gán room theo user sau xác thực. Client không nhận quyền join room bất kỳ. Logout ngắt socket ứng với token bị thu hồi. Socket xác thực thất bại nhận connect_error. Mất kết nối không mất tin vì REST có cursor và idempotency.
+
+API mặc định giới hạn 300 request/phút/IP; login/register 30/15 phút, gửi tin60/phút, trợ giúp20/phút. Sau reverse proxy cần cấu hình trust proxy đúng hạ tầng. CORS là origin allowlist cho web/socket; native thường không có Origin. Không dùng CORS thay phân quyền.

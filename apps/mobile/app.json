@@ -2,12 +2,20 @@
   "expo": {
     "name": "EduShare",
     "slug": "edushare",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "ios": { "supportsTablet": true, "bundleIdentifier": "vn.edushare.student" },
-    "android": { "package": "vn.edushare.student" },
-    "web": { "name": "EduShare", "bundler": "metro" },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "vn.edushare.student"
+    },
+    "android": {
+      "package": "vn.edushare.student"
+    },
+    "web": {
+      "name": "EduShare",
+      "bundler": "metro"
+    },
     "plugins": ["expo-secure-store"]
   }
 }

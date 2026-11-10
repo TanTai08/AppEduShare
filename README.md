@@ -1,85 +1,65 @@
-# EduShare — Mua bán & trao đổi tài liệu sinh viên
+# EduShare 2 — Kết nối sách, trao đổi tri thức
 
-Tài liệu bàn giao: [Báo cáo Word](docs/EduShare_Bao_Cao_Do_An.docx) · [Slide PowerPoint](docs/EduShare_Thuyet_Trinh.pptx) · [Hướng dẫn bảo vệ](docs/KICH_BAN_DEMO.md).
+Ứng dụng đa nền tảng cho sinh viên: **Expo SDK 58 / React Native + TypeScript**, **Node.js / Express / Socket.IO**, **PostgreSQL 17**. Chạy trong Visual Studio Code trên Windows, macOS hoặc Linux.
 
-Đồ án ứng dụng đa nền tảng bằng **React Native + Expo + TypeScript**, API **Node.js/Express**, cơ sở dữ liệu quan hệ **SQLite**. Giao diện tiếng Việt, chạy cục bộ bằng Visual Studio Code; có mã nguồn cho Android, iOS và web.
+[Báo cáo Word](docs/EduShare_Bao_Cao_Do_An.docx) · [Slide](docs/EduShare_Thuyet_Trinh.pptx) · [Database & ERD](docs/CO_SO_DU_LIEU.md) · [API](docs/API.md) · [Kiểm thử](docs/KIEM_THU.md) · [Kịch bản bảo vệ](docs/KICH_BAN_DEMO.md)
 
-> Phạm vi: MVP học tập cho tài liệu bản giấy và giao nhận trực tiếp. Không có thanh toán trực tuyến, tải/bán PDF, xác minh email, khôi phục mật khẩu, thông báo đẩy hay phát hành ứng dụng lên cửa hàng. Nhắn tin sử dụng polling mỗi 4 giây. Các phần này được tách trong lộ trình mở rộng, không trình bày như chức năng đã có.
+## Chức năng phiên bản 2
 
-## 1. Yêu cầu
+- **Chat realtime trước khi mua:** mở sách → Nhắn người bán. Hộp thư riêng, trạng thái kết nối, đang soạn tin, số tin chưa đọc, lịch sử phân trang và đồng bộ khi kết nối lại. Tin nhắn lưu PostgreSQL; cùng mã gửi lại không tạo tin trùng.
+- **Ví điểm:** mua bán hoàn thành thưởng **10 điểm cho mỗi bên**; nhận sách miễn phí dùng **20 điểm**, trừ khi chủ sách chấp nhận, hoàn khi hủy. Đổi/tặng không sinh điểm. Mỗi cặp được thưởng một lần/24 giờ; mỗi người tối đa 30 điểm/ngày UTC. Điểm không đổi thành tiền.
+- **Bản đồ điểm hẹn:** người bán chạm bản đồ để ghim hoặc nhập tọa độ, đặt tên điểm nhận; chi tiết sách có bản đồ và nút chỉ đường. Đây là vị trí công khai tự chọn, không theo dõi GPS liên tục.
+- **Hồ sơ công khai:** giới thiệu, trường/khu vực, số giao dịch hoàn thành, số sao, số nhận xét và sách đang đăng. Chỉ thành viên giao dịch đã hoàn thành mới được đánh giá, mỗi bên một lần.
+- **Hộp hỗ trợ:** trợ lý FAQ theo chủ đề và phiếu riêng để quản trị viên trả lời/đóng phiếu. FAQ không phải AI sinh và không gửi dữ liệu tới dịch vụ LLM.
+- **Giao diện mới:** hộp thư, ví điểm, lối tắt giao dịch, nút hỗ trợ, điều hướng mobile 5 mục, safe area cho màn hình tai thỏ.
+- Giữ đăng ký/đăng nhập, hồ sơ, tìm kiếm/lọc/yêu thích, đăng/sửa/ẩn tin, mua/đổi, giữ chỗ, xác nhận hai phía, báo cáo và kiểm duyệt.
 
-- Node.js **24 LTS** (Node 20 không có API SQLite tích hợp mà dự án sử dụng).
-- Git và Visual Studio Code. `node --version` phải là `v24.x` hoặc mới hơn tương thích.
-- Không cần cài MySQL, PostgreSQL, Docker hoặc dịch vụ đám mây để chạy bản này.
-- Windows, macOS hoặc Linux. Các lệnh npm giống nhau trên PowerShell và Terminal.
+Giá bán và hình thức được chụp lại khi gửi yêu cầu. Nếu chủ tin thay đổi chúng trước khi chấp nhận, người mua cần hủy và gửi yêu cầu mới. Khi một bên đã xác nhận giao nhận, hủy thông thường bị chặn; hãy gửi phiếu hỗ trợ. Quản trị có thể ẩn tin và hủy giao dịch liên quan, có audit log và hoàn điểm.
 
-## 2. Chạy nhanh trên VS Code
+## 1. Yêu cầu cài đặt
 
-```bash
+- **Node.js 24 LTS**, Git và VS Code.
+- **PostgreSQL 17+**: chọn Docker Desktop với `compose.yml`, hoặc PostgreSQL cài trực tiếp/managed PostgreSQL. Không cần cài cả hai cách.
+- Với Docker Desktop Windows: bật WSL2/virtualization và đợi Docker Engine chạy.
+- Expo Go **SDK 58** cho Android/iPhone; iPhone và máy tính cùng Wi-Fi khi chạy LAN.
+
+SQLite cũ không còn là database chạy ứng dụng. File SQLite vẫn được giữ nguyên và có công cụ chuyển dữ liệu bên dưới.
+
+## 2. Cài mới trên Windows PowerShell
+
+```powershell
 git clone https://github.com/TanTai08/AppEduShare.git
 cd AppEduShare
 code .
-npm ci
-```
-
-Tạo file cấu hình từ mẫu, **không sửa tên biến**:
-
-PowerShell (Windows):
-
-```powershell
+npm.cmd ci
 Copy-Item server/.env.example server/.env
 Copy-Item apps/mobile/.env.example apps/mobile/.env
 ```
 
-macOS/Linux:
+Khởi động PostgreSQL (Docker Desktop phải đang chạy):
 
-```bash
-cp server/.env.example server/.env
-cp apps/mobile/.env.example apps/mobile/.env
+```powershell
+npm.cmd run db:up
 ```
 
-Sau đó, trong terminal ở thư mục gốc dự án:
+Đợi `docker compose ps` hiển thị **healthy**, rồi:
 
-```bash
-npm run db:seed
-npm run dev
+```powershell
+npm.cmd run db:migrate
+npm.cmd run db:seed
+npm.cmd run dev
 ```
 
 - Web: **http://localhost:8081**.
-- API kiểm tra: **http://localhost:4000/api/health**.
-- Database tự tạo ở **server/data/edushare.sqlite**. Dữ liệu tồn tại sau khi tắt/chạy lại API.
-- Dừng ứng dụng bằng `Ctrl+C`.
-- Nếu Expo hỏi chọn cổng khác vì 8081 bận, dừng tiến trình cũ để giữ nguyên cấu hình CORS.
+- API: **http://localhost:4000/api/health** → `{"ok":true,"database":1,"engine":"postgresql"}`.
+- Realtime dùng cùng địa chỉ/cổng API, không phải cổng Metro.
+- Dừng Node/Expo bằng Ctrl+C. Dừng PostgreSQL bằng `docker compose stop`; chạy lại bằng `npm run db:up`. Không dùng `docker compose down -v` nếu muốn giữ dữ liệu.
 
-Lệnh seed có thể chạy lại: không đổi mật khẩu tài khoản đã có, không xóa dữ liệu. Chỉ tạo các tin mẫu khi bảng tin đăng rỗng.
+Trên macOS/Linux dùng `npm` thay `npm.cmd`, `cp` thay `Copy-Item`.
 
-## 3. Tài khoản demo
+## 3. Cập nhật dự án đang có (Windows)
 
-Chỉ xuất hiện sau `npm run db:seed`. Mật khẩu chung **`EduShare123!`**.
-
-| Vai trò             | Email                |
-| ------------------- | -------------------- |
-| Sinh viên Minh Anh  | anh@edushare.local   |
-| Sinh viên Hoàng Nam | nam@edushare.local   |
-| Quản trị viên       | admin@edushare.local |
-
-Đây là tài khoản giả lập dành cho máy cá nhân. Không chạy seed trên hệ thống công khai. Tài khoản mới đăng ký luôn có quyền sinh viên.
-
-## 4. Chạy Android và iOS
-
-API vẫn cần chạy trên máy tính: `npm run api`.
-
-- **Android Emulator:** đặt `EXPO_PUBLIC_API_URL=http://10.0.2.2:4000` trong `apps/mobile/.env`, chạy `npm run android` ở terminal thứ hai.
-- **iOS Simulator trên macOS:** dùng `http://localhost:4000`, chạy `npm run ios`. Cần Xcode; không chạy iOS Simulator trên Windows.
-- **Điện thoại thật:** cùng Wi-Fi với máy tính, đặt URL thành `http://<IPv4-LAN-của-máy>:4000`, chạy `npm run start -w apps/mobile` và dùng Expo Go hỗ trợ **SDK 58**. Cho phép cổng 4000 qua firewall trong mạng riêng nếu cần.
-- Dự án đã nâng đồng bộ lên **Expo SDK 58**, React 19.3 và React Native 0.88 để mở bằng Expo Go SDK 58. Không nâng riêng React/React Native mà không nâng Expo đồng bộ. iPhone thật không hỗ trợ cài Expo Go SDK cũ qua App Store.
-- Sau khi sửa `.env`, khởi động lại Expo; nếu cache cũ, chạy `npx expo start --clear` từ `apps/mobile`.
-
-Đây là mã nguồn đa nền tảng; kiểm chứng Android/iOS trên thiết bị và ký ứng dụng là bước nghiệm thu riêng, chưa có APK/IPA phát hành trong repository.
-
-### Cập nhật từ bản SDK 54 và kết nối iPhone
-
-Trong PowerShell, dừng Expo cũ bằng Ctrl+C rồi chạy:
+Dừng API và Expo cũ, mở terminal VS Code:
 
 ```powershell
 cd D:\EDUSHARE\AppEduShare
@@ -87,96 +67,130 @@ git pull --ff-only
 npm.cmd ci
 ```
 
-Giữ cấu hình cá nhân trong `apps/mobile/.env` (file này không bị Git ghi đè). Dùng `ipconfig` tìm IPv4 Wi-Fi của máy tính rồi đặt:
+Mở `server/.env` và thêm/sửa dòng sau (giữ các dòng cấu hình khác):
 
 ```env
-EXPO_PUBLIC_API_URL=http://<IPv4-LAN-của-máy>:4000
+DATABASE_URL=postgresql://edushare:edushare_dev@localhost:5432/edushare
 ```
 
-Chạy API ở terminal thứ nhất: `npm.cmd run api`. Trên Safari iPhone, mở `http://<IPv4-LAN-của-máy>:4000/api/health`; cần thấy `{"ok":true,"database":1}` trước khi đăng nhập.
+Mật khẩu trên chỉ dành cho PostgreSQL local do compose tạo. Nếu tự cài PostgreSQL, thay user/password/host/port/database theo cài đặt thật; ký tự đặc biệt trong mật khẩu phải URL-encode. Không gửi connection string chứa mật khẩu vào chat hoặc commit Git.
 
-Chạy Expo ở terminal thứ hai:
+Chạy `npm.cmd run db:up` và đợi PostgreSQL healthy, sau đó **chọn đúng một phương án**:
+
+**A. Giữ dữ liệu SQLite cũ:** dừng API cũ, sao lưu toàn bộ `server/data/` (gồm WAL/SHM nếu còn). Database PostgreSQL đích phải chưa có người dùng:
 
 ```powershell
-cd D:\EDUSHARE\AppEduShare
+npm.cmd run db:migrate
+npm.cmd run db:import:sqlite
+```
+
+Công cụ mặc định đọc `server/data/edushare.sqlite` ở chế độ chỉ đọc, giữ ID, password hash, phiên, tin đăng, yêu thích, giao dịch, đánh giá, báo cáo, thông báo và chuyển chat cũ thành cuộc trò chuyện. Người dùng có 0 điểm khởi đầu; không thưởng hồi tố cho giao dịch cũ. Giao dịch miễn phí đã chấp nhận trước chuyển đổi được giữ nguyên, không trừ điểm hồi tố. File nguồn không bị xóa. Đích đã có người dùng thì import bị từ chối; lỗi giữa chừng rollback toàn bộ. Không chạy seed trước import.
+
+**B. Bắt đầu bằng dữ liệu mẫu mới:**
+
+```powershell
+npm.cmd run db:migrate
+npm.cmd run db:seed
+```
+
+Sau đó chạy API và Expo như mục 5. Không cần xóa file `.env` hoặc file SQLite. Nếu đã seed nhưng muốn import, hãy tạo **database PostgreSQL rỗng khác**, không xóa dữ liệu đang có.
+
+## 4. Không dùng Docker
+
+Cài PostgreSQL từ https://www.postgresql.org/download/windows/ rồi dùng pgAdmin tạo user và database riêng. Đặt `DATABASE_URL` trong `server/.env`, chạy `npm run db:migrate`, rồi seed hoặc import như trên. Không chạy `db:up` trong trường hợp này.
+
+Kết nối cloud PostgreSQL cần cấu hình TLS theo nhà cung cấp; không tắt xác thực chứng chỉ. Chỉ Node API giữ thông tin database. Điện thoại không kết nối trực tiếp tới PostgreSQL.
+
+## 5. Chạy trên web, Android và iPhone
+
+Terminal 1, tại thư mục gốc:
+
+```powershell
+npm.cmd run api
+```
+
+Đặt `EXPO_PUBLIC_API_URL` trong `apps/mobile/.env`:
+
+| Thiết bị                         | URL API                             |
+| -------------------------------- | ----------------------------------- |
+| Web / iOS Simulator trên Mac     | `http://localhost:4000`             |
+| Android Emulator                 | `http://10.0.2.2:4000`              |
+| iPhone / Android thật cùng Wi-Fi | `http://<IPv4-Wi-Fi-máy-tính>:4000` |
+
+Terminal 2:
+
+```powershell
+# iPhone/Android thật: quét QR, cho phép Local Network
 npm.cmd run start -w apps/mobile -- --clear --lan
+# Hoặc Android Emulator đã bật:
+npm.cmd run android -w apps/mobile -- --clear
+# Hoặc web:
+npm.cmd run web -w apps/mobile
 ```
 
-Quét QR bằng Camera iPhone để mở trong Expo Go, cho phép quyền Local Network. iPhone và máy tính cần cùng mạng Wi-Fi không chặn kết nối giữa thiết bị. Không dùng `localhost` hoặc `10.0.2.2` cho API trên iPhone. Đường dẫn Expo cổng 8081 tải mã ứng dụng; API cổng 4000 phải truy cập được riêng.
+Kiểm tra `/api/health` bằng Safari/Chrome trên thiết bị trước khi đăng nhập. Khi đổi `.env`, dừng và khởi động Expo lại. Cổng 4000 phục vụ API + Socket.IO; cổng 8081 chỉ tải mã Expo. Chỉ cho phép Node qua firewall trong mạng riêng khi cần, không tắt toàn bộ firewall.
 
-Nếu có chỉnh sửa mã nguồn chưa commit, Git có thể từ chối pull; lưu thay đổi trước khi cập nhật, không dùng reset để xóa chúng. `npm ci` thay thư viện cài đặt theo lockfile; không xóa database hoặc file `.env`. Không cần chạy lại seed để nâng SDK.
+Nếu Expo Go SDK 58 yêu cầu đăng nhập, dùng cùng tài khoản Expo trên điện thoại và CLI. Windows lỗi tự mở trình duyệt thì:
 
-## 5. Chức năng đã triển khai
-
-- Đăng ký/đăng nhập/đăng xuất, phiên hết hạn 7 ngày, chỉnh sửa hồ sơ.
-- Đăng/sửa/ẩn/hiện tin, ba hình thức bán/đổi/tặng, kiểm tra dữ liệu.
-- Tìm theo tên hoặc môn học; lọc trường, khu vực và hình thức; sắp xếp mới nhất/giá.
-- Lưu yêu thích, chi tiết tài liệu, xem điểm và nhận xét người đăng.
-- Gửi yêu cầu mua/nhận/đổi một tài liệu lấy một tài liệu.
-- Người đăng chấp nhận; giữ chỗ nguyên tử; tự hủy yêu cầu trùng tài liệu khác.
-- Hủy giao dịch và trả tài liệu về trạng thái sẵn sàng.
-- Cả hai bên xác nhận giao nhận mới hoàn thành; mỗi bên đánh giá một lần.
-- Nhắn tin riêng theo giao dịch, thông báo trong app và đánh dấu đã đọc.
-- Báo cáo tin đăng; quản trị xem thống kê, ẩn tin vi phạm, xử lý báo cáo.
-- Quản trị ẩn tin sẽ hủy giao dịch đang mở liên quan và khóa việc chủ tin tự hiện lại.
-
-Ảnh bìa hiện tại là hình minh họa tạo bằng giao diện, không phải ảnh chụp tài liệu thực tế. Chưa có tải ảnh hoặc đính kèm file.
-
-## 6. Kiểm tra và xuất web
-
-```bash
-npm test
-npm run typecheck
-npm run build:web
-# Kiểm tra tương thích SDK và đóng gói mã iOS/Android:
-npm run check:sdk -w apps/mobile
-npm run build:native -w apps/mobile
-# hoặc chạy tất cả:
-npm run check
+```powershell
+npx.cmd expo login --no-browser
+npx.cmd expo whoami
 ```
 
-Web build nằm ở `apps/mobile/dist/`. Đây là frontend tĩnh; vẫn phải chạy API riêng. Khi triển khai cần build với `EXPO_PUBLIC_API_URL` trỏ đến API HTTPS, cấu hình `CORS_ORIGINS` đúng domain và giữ database trên ổ đĩa bền vững. Không đóng gói DB vào hosting tĩnh.
+Tài khoản chỉ có đăng nhập liên kết có thể cần browser flow: trong PowerShell đặt `$env:BROWSER="none"`, chạy `npx.cmd expo login`, mở **URL mới** in trong terminal trên trình duyệt cùng máy; giữ CLI chờ callback. Sau đó `Remove-Item Env:BROWSER`. Không dùng URL từ lần chạy đã dừng. Đây là tài khoản Expo, khác tài khoản EduShare.
 
-Bundle native nằm ở `apps/mobile/dist-native/`; đây là mã đóng gói để kiểm chứng bundler, không phải file cài đặt APK/IPA. Expo Go SDK 58 tải mã từ Metro khi chạy `npm run start -w apps/mobile`.
+## 6. Demo và kiểm tra database
 
-## 7. Cấu trúc
+Sau seed, ba tài khoản dùng mật khẩu **`EduShare123!`**:
+
+| Tài khoản            | Vai trò   |
+| -------------------- | --------- |
+| anh@edushare.local   | Minh Anh  |
+| nam@edushare.local   | Hoàng Nam |
+| admin@edushare.local | Quản trị  |
+
+Tài khoản demo **mới tạo** có 20 điểm mẫu ghi rõ trong sổ điểm, để thử nhận sách. Đăng ký bình thường có 0 điểm. Seed chạy lại không ghi đè mật khẩu/số dư hoặc tạo thưởng lặp. Không chạy seed trên server công khai.
+
+Xem database bằng **pgAdmin** hoặc extension PostgreSQL của VS Code:
+
+- Host `localhost`, port `5432`, database `edushare`, user `edushare`, mật khẩu local theo cấu hình compose.
+- Xem `public.users`, `listings`, `conversations`, `messages`, `transactions`, `point_ledger`, `reviews`, `support_tickets`...
+- Schema chuẩn: `server/src/schema.sql`; migrations có version và khóa để chạy an toàn khi nhiều API cùng khởi động.
+
+## 7. Bản đồ và quyền riêng tư
+
+Leaflet 1.9.4 được đóng gói cùng ứng dụng (giữ BSD license), không tải script từ CDN lúc chạy. Tiles OpenStreetMap cần Internet và tuân thủ https://operations.osmfoundation.org/policies/tiles/. Giữ attribution; không tải hàng loạt hoặc prefetch để dùng offline. Native WebView gửi User-Agent nhận diện ứng dụng. Dịch vụ tiles công cộng có thể giới hạn; khi triển khai nhiều người dùng cần nhà cung cấp tiles và điều khoản phù hợp.
+
+Có thể cấu hình `EXPO_PUBLIC_MAP_TILE_URL` và `EXPO_PUBLIC_MAP_ATTRIBUTION` trong `apps/mobile/.env` theo một provider bạn được phép sử dụng, rồi khởi động lại Expo. Nếu provider cần map key public, giới hạn key theo ứng dụng/domain và quota; không đặt secret backend trong biến EXPO_PUBLIC.
+
+Điểm hẹn công khai là do người đăng chọn. Không lưu lịch sử GPS, không tự lấy vị trí nhà. Nếu tiles không tải, có thể nhập tọa độ và mở đường đi trong ứng dụng bản đồ ngoài. Bản đồ ngoài tự xác định điểm xuất phát nếu người dùng cho phép.
+
+## 8. Kiểm thử và build
+
+PostgreSQL cần đang chạy; test tạo **schema tạm riêng** và xóa schema đó sau khi xong, không truncate bảng ứng dụng. Nếu server dùng user hạn quyền, tạo database test và cấu hình `TEST_DATABASE_URL` với quyền tạo schema.
+
+```powershell
+npm.cmd test
+npm.cmd run check
+npm.cmd run check:sdk -w apps/mobile
+npm.cmd run build:native -w apps/mobile
+```
+
+GitHub Actions có PostgreSQL service, kiểm tra SDK, TypeScript, tests và export web/iOS/Android. Export native không phải APK/IPA; vẫn cần nghiệm thu trên điện thoại. Web build ở `apps/mobile/dist`; native ở `dist-native`, đều không commit.
+
+## 9. Cấu trúc, sao lưu và giới hạn
 
 ```text
-apps/mobile/       React Native, giao diện và API client TypeScript
-server/src/        Express, xác thực, schema SQL, seed
-server/test/       Kiểm thử tích hợp HTTP với database trong bộ nhớ
-docs/              Báo cáo đồ án, sơ đồ, API, kịch bản demo và kiểm thử
-.github/workflows/ CI: typecheck, test, web build
-.vscode/           Tasks và cấu hình debug
+apps/mobile/                 Giao diện Expo, API client, Socket.IO, bản đồ
+server/src/                  Express, nghiệp vụ điểm/giao dịch, realtime, SQL
+server/test/                 Kiểm thử HTTP + sockets + PostgreSQL + import
+server/migrations/           Schema SQLite lịch sử chỉ dùng công cụ chuyển đổi
+docs/                        Báo cáo, slide, ERD, ảnh chạy thật và hướng dẫn
+compose.yml                  PostgreSQL cục bộ + persistent volume
 ```
 
-Tài liệu cần đọc: [Báo cáo đồ án](docs/BAO_CAO_DO_AN.md), [thiết kế dữ liệu](docs/CO_SO_DU_LIEU.md), [API](docs/API.md), [kịch bản bảo vệ](docs/KICH_BAN_DEMO.md), [kiểm thử](docs/KIEM_THU.md), [lộ trình](docs/LO_TRINH.md).
+Sao lưu PostgreSQL bằng `pg_dump`/pgAdmin; thử khôi phục vào database khác. File SQLite cũ không phải backup của PostgreSQL mới. Không commit `.env`, database dump, token, thông tin cá nhân hoặc mật khẩu thật.
 
-## 8. Cơ sở dữ liệu và sao lưu
+Hiện API realtime phù hợp **một Node instance**; nhiều instance cần Socket.IO adapter (ví dụ Redis). Các chuyển trạng thái marketplace dùng transaction PostgreSQL và advisory lock ngắn chung để bảo toàn điểm/giữ chỗ; đây là lựa chọn đúng đắn cho quy mô đồ án, cần đo tải và tối ưu khóa khi mở rộng.
 
-Schema gốc: `server/src/schema.sql`. API dùng foreign keys, prepared statements và transaction `BEGIN IMMEDIATE` khi giữ chỗ. Không dùng SQLite từ trình duyệt; client chỉ truy cập qua API.
-
-Để xem dữ liệu, dùng extension SQLite của VS Code mở `server/data/edushare.sqlite` sau khi seed. Để sao lưu đơn giản, **tắt API trước**, rồi sao chép toàn bộ `server/data/` sang nơi an toàn (kể cả file WAL/SHM nếu còn). Không đưa DB chứa tài khoản hoặc tin nhắn lên GitHub.
-
-SQLite phù hợp bản đồ án và một API instance. Khi nhiều API instance hoặc lượng ghi lớn, chuyển PostgreSQL; cần viết migration và thay adapter truy vấn, không chỉ đổi chuỗi kết nối.
-
-## 9. Đẩy lên GitHub và làm việc tiếp
-
-Repository: https://github.com/TanTai08/AppEduShare
-
-```bash
-git checkout -b feature/ten-chuc-nang
-# chỉnh sửa và kiểm tra
-npm run check
-git add .
-git commit -m "feat: mo ta thay doi"
-git push -u origin feature/ten-chuc-nang
-```
-
-Mở pull request về `main`; xem kết quả ở tab Actions. `.gitignore` loại trừ `.env`, database, node_modules và build. Chỉ các file `.env.example` chứa cấu hình mẫu được đưa lên Git.
-
-## 10. Giới hạn khi đưa vào sử dụng thực
-
-Cần thêm HTTPS, sao lưu tự động, email xác minh/reset mật khẩu, quản lý tài khoản vi phạm, nhật ký quản trị, phân trang chat, phát hiện spam, lưu trữ ảnh có kiểm soát và quy trình giải quyết tranh chấp trước khi vận hành công khai. Phiên web lưu trong sessionStorage để demo; cần đánh giá mô hình cookie HttpOnly khi triển khai web production. Phiên native lưu trong SecureStore.
-
-Tài liệu báo cáo có chỗ trống cho họ tên, lớp, giảng viên và đơn vị. Người nộp cần điền và rà soát nội dung, kết quả chạy trên máy và quy định trình bày của trường.
+Chưa có thanh toán/giữ tiền, bán PDF, tải ảnh thật, email xác minh/reset hoặc push notification khi app đóng. Chatbot là FAQ có chuyển tiếp người hỗ trợ, chưa dùng LLM. Điểm/sao không chứng minh việc thanh toán/giao nhận ngoài đời; cơ chế giới hạn điểm giảm lạm dụng nhưng chưa thay thế chống gian lận thực tế. Có phân trang chat; các danh sách khác hiện giới hạn số bản ghi, chưa phải hệ thống quy mô lớn.

@@ -1,13 +1,13 @@
 {
   "name": "edushare",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "workspaces": [
     "apps/mobile",
     "server"
   ],
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.3.0"
   },
   "scripts": {
     "dev": "concurrently -k -n API,EXPO \"npm run dev -w server\" \"npm run web -w apps/mobile\"",
@@ -20,7 +20,10 @@
     "typecheck": "npm run typecheck -w apps/mobile",
     "build:web": "npm run build -w apps/mobile",
     "check": "npm run typecheck && npm test && npm run build:web",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "db:up": "docker compose up -d",
+    "db:migrate": "npm run migrate -w server",
+    "db:import:sqlite": "npm run import:sqlite -w server"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

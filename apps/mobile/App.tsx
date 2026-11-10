@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
   KeyboardAvoidingView,
   Platform,
+  Linking,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -20,10 +21,16 @@ import {
   User,
   Listing,
   Transaction,
-  Message,
+  Conversation,
   Notice,
   AdminData,
 } from './api';
+
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRealtime } from './realtime';
+import { Wallet, UserProfile, Inbox, RealtimeChat, SupportBox } from './components/Community';
+import BookMap from './components/BookMap';
+import { Pin } from './components/mapHtml';
 
 const C = {
   green: '#174D3C',
@@ -45,12 +52,23 @@ const statuses: Record<string, string> = {
   cancelled: 'Đã hủy',
 };
 const money = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + 'đ';
-type Tab = 'home' | 'saved' | 'mine' | 'transactions' | 'notifications' | 'profile' | 'admin';
+type Tab =
+  | 'home'
+  | 'saved'
+  | 'mine'
+  | 'transactions'
+  | 'notifications'
+  | 'profile'
+  | 'admin'
+  | 'messages'
+  | 'wallet'
+  | 'support';
 type Overlay =
   | { type: 'auth' }
   | { type: 'listing'; item?: Listing }
   | { type: 'detail'; item: Listing }
-  | { type: 'chat'; tx: Transaction }
+  | { type: 'chat'; conversation: Conversation }
+  | { type: 'user'; id: string }
   | { type: 'review'; tx: Transaction }
   | { type: 'report'; item: Listing }
   | null;
@@ -138,11 +156,20 @@ function Choices({
 }
 
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <MainApp />
+    </SafeAreaProvider>
+  );
+}
+function MainApp() {
+  const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const wide = width >= 900;
   const [user, setUser] = useState<User | null>(null),
     [tab, setTab] = useState<Tab>('home'),
     [overlay, setOverlay] = useState<Overlay>(null);
+  const { socket, connected } = useRealtime(user);
   const [items, setItems] = useState<Listing[]>([]),
     [mine, setMine] = useState<Listing[]>([]),
     [saved, setSaved] = useState<Listing[]>([]),
@@ -234,7 +261,7 @@ export default function App() {
   };
   const go = (next: Tab) => {
     setError('');
-    if (next === 'home') setTab(next);
+    if (next === 'home' || next === 'support') setTab(next);
     else guarded(() => setTab(next));
   };
   const openDetail = async (item: Listing) => {
@@ -244,14 +271,63 @@ export default function App() {
   };
   const tabs: [Tab, string, string][] = [
     ['home', '⌂', 'Khám phá'],
+    ['messages', '◌', 'Tin nhắn'],
+    ['wallet', '✦', 'Ví điểm'],
     ['saved', '♡', 'Đã lưu'],
     ['mine', '▤', 'Tin của tôi'],
     ['transactions', '⇄', 'Giao dịch'],
     ['notifications', '○', 'Thông báo'],
     ['profile', '◎', 'Tài khoản'],
+    ['support', '?', 'Hỗ trợ'],
   ];
   if (user?.role === 'admin') tabs.push(['admin', '⚙', 'Quản trị']);
   const list = tab === 'home' ? items : tab === 'saved' ? saved : mine;
+  useEffect(() => {
+    if (!socket) return;
+    const update = () => void refresh();
+    const wallet = () => {
+      void api<User>('/me').then(setUser).catch(showError);
+    };
+    socket.on('transaction:updated', update);
+    socket.on('notification:new', update);
+    socket.on('wallet:updated', wallet);
+    socket.on('connect', wallet);
+    return () => {
+      socket.off('transaction:updated', update);
+      socket.off('notification:new', update);
+      socket.off('wallet:updated', wallet);
+      socket.off('connect', wallet);
+    };
+  }, [socket, refresh]);
+  const openConversation = (id: string) =>
+    void act(async () => {
+      const conversations = await api<Conversation[]>('/conversations');
+      const c = conversations.find((c) => c.id === id);
+      if (!c) throw new Error('Không tìm thấy cuộc trò chuyện.');
+      setOverlay({ type: 'chat', conversation: c });
+    });
+  const startChat = (item: Listing) =>
+    guarded(
+      () =>
+        void act(async () => {
+          const c = await api<Conversation>('/conversations', 'POST', { listing_id: item.id });
+          const list = await api<Conversation[]>('/conversations');
+          setOverlay({
+            type: 'chat',
+            conversation: list.find((x) => x.id === c.id) || {
+              ...c,
+              title: item.title,
+              buyer_name: user?.name || '',
+              seller_name: item.owner_name,
+              listing_status: item.status,
+              unread: 0,
+              last_message: null,
+              updated_at: new Date().toISOString(),
+            },
+          });
+        }),
+    );
+
   const txAction = (tx: Transaction, action: string) =>
     act(async () => {
       await api(`/transactions/${tx.id}/action`, 'POST', { action });
@@ -262,7 +338,12 @@ export default function App() {
   return (
     <View style={s.app}>
       <StatusBar style="dark" />
-      <View style={[s.header, { paddingHorizontal: wide ? 36 : 18 }]}>
+      <View
+        style={[
+          s.header,
+          { paddingHorizontal: wide ? 36 : 18, height: 80 + insets.top, paddingTop: insets.top },
+        ]}
+      >
         <Pressable onPress={() => go('home')} style={s.brand}>
           <View style={s.logo}>
             <Text style={{ color: C.lime, fontSize: 25, fontWeight: '900' }}>e</Text>
@@ -273,7 +354,18 @@ export default function App() {
           </Text>
         </Pressable>
         <View style={s.row}>
-          {wide && <Text style={s.muted}>Tài liệu cũ · Hành trình mới</Text>}
+          {wide && <Text style={s.muted}>Tài liệu cũ · Kết nối mới</Text>}
+          {user && (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => go('wallet')}
+              style={{ backgroundColor: C.lime, padding: 10, borderRadius: 13 }}
+            >
+              <Text style={{ color: C.green, fontSize: 12, fontWeight: '800' }}>
+                ✦ {user.points}
+              </Text>
+            </Pressable>
+          )}
           <Button
             label={user ? user.name : 'Đăng nhập'}
             secondary
@@ -426,6 +518,35 @@ export default function App() {
               </View>
             </>
           )}
+          {tab === 'home' && (
+            <View style={s.featureRail}>
+              {(
+                [
+                  ['messages', '◌', 'Hỏi trước, mua sau', 'Nhắn người bán ngay'],
+                  [
+                    'wallet',
+                    '✦',
+                    'Mỗi giao dịch, thêm tri thức',
+                    '10 điểm thưởng · 20 điểm nhận sách',
+                  ],
+                  ['transactions', '⇄', 'Hẹn nhận, xác nhận', 'Theo dõi giao dịch của bạn'],
+                ] as [Tab, string, string, string][]
+              ).map(([key, icon, title, copy]) => (
+                <Pressable
+                  accessibilityRole="button"
+                  key={key}
+                  onPress={() => go(key)}
+                  style={s.featureTile}
+                >
+                  <Text style={{ fontSize: 24, color: C.green }}>{icon}</Text>
+                  <View style={{ gap: 5, flex: 1 }}>
+                    <Text style={s.label}>{title}</Text>
+                    <Text style={s.muted}>{copy}</Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
           <View style={[s.row, { justifyContent: 'space-between' }]}>
             <View style={{ gap: 6 }}>
               <Text style={s.title}>
@@ -434,7 +555,10 @@ export default function App() {
                     home: 'Tài liệu dành cho bạn',
                     saved: 'Tủ sách đã lưu',
                     mine: 'Tài liệu của tôi',
-                    transactions: 'Giao dịch & tin nhắn',
+                    transactions: 'Hành trình giao dịch',
+                    messages: 'Hộp thư của bạn',
+                    wallet: 'Ví điểm tri thức',
+                    support: 'Luôn có người hỗ trợ',
                     notifications: 'Thông báo của bạn',
                     profile: 'Hồ sơ sinh viên',
                     admin: 'Bảng quản trị',
@@ -454,6 +578,15 @@ export default function App() {
             />
           </View>
           {loading && <ActivityIndicator color={C.green} />}
+          {tab === 'messages' && user && (
+            <Inbox
+              user={user}
+              socket={socket}
+              onOpen={(conversation) => setOverlay({ type: 'chat', conversation })}
+            />
+          )}
+          {tab === 'wallet' && user && <Wallet socket={socket} />}
+          {tab === 'support' && <SupportBox user={user} socket={socket} />}
           {['home', 'saved', 'mine'].includes(tab) && (
             <View style={s.grid}>
               {list.map((item, index) => (
@@ -508,7 +641,7 @@ export default function App() {
                         {item.kind === 'sell'
                           ? money(item.price)
                           : item.kind === 'free'
-                            ? 'Tặng miễn phí'
+                            ? `${item.point_cost} điểm · Miễn phí`
                             : 'Cùng trao đổi'}
                       </Text>
                       <Text numberOfLines={1} style={s.muted}>
@@ -572,13 +705,20 @@ export default function App() {
                   <Text style={s.muted}>
                     {tx.buyer_name} ⇄ {tx.seller_name}
                   </Text>
+                  <Text style={s.muted}>
+                    {tx.kind === 'sell'
+                      ? money(tx.price)
+                      : tx.kind === 'free'
+                        ? `${tx.point_cost} điểm nhận sách`
+                        : 'Trao đổi tài liệu'}
+                  </Text>
                   {!!tx.offered_title && <Text>Đổi với: {tx.offered_title}</Text>}
                   {!!tx.note && <Text style={s.muted}>Lời nhắn: {tx.note}</Text>}
                   <View style={s.row}>
                     <Button
                       label="Tin nhắn"
                       secondary
-                      onPress={() => setOverlay({ type: 'chat', tx })}
+                      onPress={() => openConversation(tx.conversation_id)}
                     />
                     {tx.status === 'pending' && tx.seller_id === user?.id && (
                       <Button
@@ -587,14 +727,16 @@ export default function App() {
                         onPress={() => void txAction(tx, 'accept')}
                       />
                     )}
-                    {['pending', 'accepted'].includes(tx.status) && (
-                      <Button
-                        label="Hủy yêu cầu"
-                        secondary
-                        disabled={busy}
-                        onPress={() => void txAction(tx, 'cancel')}
-                      />
-                    )}
+                    {['pending', 'accepted'].includes(tx.status) &&
+                      !tx.buyer_confirmed &&
+                      !tx.seller_confirmed && (
+                        <Button
+                          label="Hủy yêu cầu"
+                          secondary
+                          disabled={busy}
+                          onPress={() => void txAction(tx, 'cancel')}
+                        />
+                      )}
                     {tx.status === 'accepted' && (
                       <Button
                         label={
@@ -639,7 +781,7 @@ export default function App() {
               {notices.map((n) => (
                 <Pressable
                   key={n.id}
-                  onPress={() => go('transactions')}
+                  onPress={() => go(n.transaction_id ? 'transactions' : 'messages')}
                   style={[s.panel, { backgroundColor: n.read_at ? C.white : '#EDF5E5' }]}
                 >
                   <Text style={s.subtitle}>{n.body}</Text>
@@ -657,6 +799,25 @@ export default function App() {
                   ? 'Quản trị viên'
                   : 'Tài khoản sinh viên · Email chưa xác minh'}
               </Text>
+              <View style={s.row}>
+                {tabs
+                  .filter(([k]) =>
+                    ['saved', 'transactions', 'notifications', 'support', 'admin'].includes(k),
+                  )
+                  .map(([key, icon, label]) => (
+                    <Button
+                      key={key}
+                      label={icon + ' ' + label}
+                      secondary
+                      onPress={() => go(key)}
+                    />
+                  ))}
+              </View>
+              <Button
+                label="Xem hồ sơ công khai & đánh giá"
+                secondary
+                onPress={() => setOverlay({ type: 'user', id: user.id })}
+              />
               <Profile
                 user={user}
                 busy={busy}
@@ -768,20 +929,42 @@ export default function App() {
           </Text>
         </ScrollView>
         {!wide && (
-          <View style={s.bottomNav}>
-            {tabs.map(([key, icon, label]) => (
-              <Pressable
-                key={key}
-                onPress={() => go(key)}
-                style={{ alignItems: 'center', padding: 8, flex: 1 }}
-              >
-                <Text style={{ fontSize: 21, color: tab === key ? C.green : C.muted }}>{icon}</Text>
-                <Text style={{ fontSize: 9, color: tab === key ? C.green : C.muted }}>{label}</Text>
-              </Pressable>
-            ))}
+          <View style={[s.bottomNav, { paddingBottom: Math.max(insets.bottom, 6) }]}>
+            {tabs
+              .filter(([key]) => ['home', 'messages', 'mine', 'wallet', 'profile'].includes(key))
+              .map(([key, icon, label]) => (
+                <Pressable
+                  key={key}
+                  onPress={() => go(key)}
+                  style={{ alignItems: 'center', padding: 8, flex: 1 }}
+                >
+                  <Text style={{ fontSize: 21, color: tab === key ? C.green : C.muted }}>
+                    {icon}
+                  </Text>
+                  <Text style={{ fontSize: 9, color: tab === key ? C.green : C.muted }}>
+                    {label}
+                  </Text>
+                </Pressable>
+              ))}
           </View>
         )}
       </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Mở hộp hỗ trợ"
+        onPress={() => go('support')}
+        style={{
+          position: 'absolute',
+          right: 18,
+          bottom: wide ? 22 : 85 + insets.bottom,
+          backgroundColor: C.green,
+          padding: 15,
+          borderRadius: 24,
+          boxShadow: '0px 4px 14px #17352B35',
+        }}
+      >
+        <Text style={{ color: C.lime, fontWeight: '800' }}> ? Hỗ trợ</Text>
+      </Pressable>
       <Modal
         visible={!!overlay}
         transparent
@@ -790,7 +973,10 @@ export default function App() {
       >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          style={s.backdrop}
+          style={[
+            s.backdrop,
+            { paddingTop: Math.max(insets.top, 20), paddingBottom: Math.max(insets.bottom, 20) },
+          ]}
         >
           <View style={[s.modal, { maxHeight: '92%', width: wide ? 600 : '95%' }]}>
             <View
@@ -810,7 +996,8 @@ export default function App() {
                     auth: 'Chào mừng đến EduShare',
                     listing: 'Thông tin tài liệu',
                     detail: 'Chi tiết tài liệu',
-                    chat: 'Trao đổi giao nhận',
+                    chat: 'Trò chuyện về sách',
+                    user: 'Hồ sơ & uy tín',
                     review: 'Đánh giá giao dịch',
                     report: 'Báo cáo tin đăng',
                   }[overlay?.type || 'auth']
@@ -877,6 +1064,8 @@ export default function App() {
                   item={overlay.item}
                   user={user}
                   busy={busy}
+                  onChat={() => startChat(overlay.item)}
+                  onProfile={() => setOverlay({ type: 'user', id: overlay.item.owner_id })}
                   onSave={() =>
                     guarded(
                       () =>
@@ -908,7 +1097,16 @@ export default function App() {
                 />
               )}
               {overlay?.type === 'chat' && user && (
-                <Chat tx={overlay.tx} user={user} onError={showError} />
+                <RealtimeChat
+                  key={overlay.conversation.id}
+                  conversation={overlay.conversation}
+                  user={user}
+                  socket={socket}
+                  connected={connected}
+                />
+              )}
+              {overlay?.type === 'user' && (
+                <UserProfile id={overlay.id} onBook={(item) => void openDetail(item)} />
               )}
               {overlay?.type === 'review' && (
                 <ReviewForm
@@ -1015,6 +1213,19 @@ function ListingForm({
     [kind, setKind] = useState(item?.kind || 'sell'),
     [price, setPrice] = useState(String(item?.price || '')),
     [condition, setCondition] = useState(item?.condition || 'Như mới');
+  const [pickupLabel, setPickupLabel] = useState(item?.pickup_label || ''),
+    [pin, setPin] = useState<Pin | null>(
+      item?.latitude != null && item.longitude != null
+        ? { latitude: item.latitude, longitude: item.longitude }
+        : null,
+    );
+  const [lat, setLat] = useState(item?.latitude != null ? String(item.latitude) : ''),
+    [lon, setLon] = useState(item?.longitude != null ? String(item.longitude) : '');
+  const choosePin = (p: Pin) => {
+    setPin(p);
+    setLat(p.latitude.toFixed(6));
+    setLon(p.longitude.toFixed(6));
+  };
   return (
     <View style={{ gap: 15 }}>
       <Text style={s.muted}>
@@ -1038,6 +1249,28 @@ function ListingForm({
         value={condition}
         onChange={setCondition}
       />
+      {kind === 'free' && (
+        <Text style={s.badge}>
+          Sách miễn phí · Người nhận dùng 20 điểm khi bạn chấp nhận yêu cầu.
+        </Text>
+      )}
+      <Field label="Tên điểm hẹn (công khai)" value={pickupLabel} onChange={setPickupLabel} />
+      <Text style={s.muted}>
+        Chạm bản đồ để ghim điểm nhận sách. Nên chọn cổng trường hoặc thư viện; không cần chia sẻ
+        địa chỉ nhà.
+      </Text>
+      <BookMap pin={pin} editable onChange={choosePin} />
+      <View style={s.row}>
+        <View style={{ flex: 1, minWidth: 130 }}>
+          <Field label="Vĩ độ điểm hẹn" value={lat} onChange={setLat} />
+        </View>
+        <View style={{ flex: 1, minWidth: 130 }}>
+          <Field label="Kinh độ điểm hẹn" value={lon} onChange={setLon} />
+        </View>
+      </View>
+      <Text style={s.muted}>
+        Có thể nhập tọa độ thủ công nếu bản đồ không tải. Để trống cả hai nếu chưa có điểm hẹn.
+      </Text>
       <Button
         label={busy ? 'Đang lưu…' : 'Lưu tài liệu'}
         disabled={
@@ -1047,6 +1280,9 @@ function ListingForm({
           subject.trim().length < 2 ||
           !school ||
           !area ||
+          !!lat.trim() !== !!lon.trim() ||
+          (!!lat.trim() && (!Number.isFinite(Number(lat)) || Math.abs(Number(lat)) > 90)) ||
+          (!!lon.trim() && (!Number.isFinite(Number(lon)) || Math.abs(Number(lon)) > 180)) ||
           (kind === 'sell' && (!Number.isInteger(Number(price)) || Number(price) < 1000))
         }
         onPress={() =>
@@ -1059,6 +1295,9 @@ function ListingForm({
             kind,
             price: kind === 'sell' ? Number(price) : 0,
             condition,
+            pickup_label: pickupLabel,
+            latitude: lat.trim() ? Number(lat) : null,
+            longitude: lon.trim() ? Number(lon) : null,
           })
         }
       />
@@ -1072,12 +1311,16 @@ function Detail({
   onSave,
   onReport,
   onRequest,
+  onChat,
+  onProfile,
 }: {
   item: Listing;
   user: User | null;
   busy: boolean;
   onSave: () => void;
   onReport: () => void;
+  onChat: () => void;
+  onProfile: () => void;
   onRequest: (offered: string, note: string) => void;
 }) {
   const [offers, setOffers] = useState<Listing[]>([]),
@@ -1105,7 +1348,11 @@ function Detail({
         {kinds[item.kind]} · {statuses[item.status]}
       </Text>
       <Text style={{ fontSize: 27, fontWeight: '800', color: C.green }}>
-        {item.kind === 'sell' ? money(item.price) : kinds[item.kind]}
+        {item.kind === 'sell'
+          ? money(item.price)
+          : item.kind === 'free'
+            ? `${item.point_cost} điểm · Miễn phí`
+            : kinds[item.kind]}
       </Text>
       <Text style={s.muted}>
         {item.subject} · {item.condition}
@@ -1115,12 +1362,37 @@ function Detail({
       <Text style={{ lineHeight: 25, color: C.ink }}>{item.description}</Text>
       <View style={s.panel}>
         <Text style={s.subtitle}>{item.owner_name}</Text>
+        <Button label="Xem hồ sơ & đánh giá" secondary onPress={onProfile} />
         <Text style={s.muted}>
           {item.owner_rating
             ? `★ ${item.owner_rating} từ giao dịch đã hoàn thành`
             : 'Chưa có đánh giá'}
         </Text>
       </View>
+      {item.latitude != null && item.longitude != null && (
+        <View style={{ gap: 12 }}>
+          <Text style={s.subtitle}>⌖ {item.pickup_label || 'Điểm hẹn nhận sách'}</Text>
+          <BookMap pin={{ latitude: item.latitude, longitude: item.longitude }} />
+          <Button
+            label="Chỉ đường đến điểm hẹn"
+            secondary
+            onPress={() => {
+              void Linking.openURL(
+                `https://www.google.com/maps/dir/?api=1&destination=${item.latitude},${item.longitude}`,
+              ).catch(() => setError('Không mở được bản đồ.'));
+            }}
+          />
+        </View>
+      )}
+      {user?.id !== item.owner_id && (
+        <Button label="Nhắn người bán" onPress={onChat} disabled={busy} />
+      )}
+      {item.kind === 'free' && (
+        <Text style={s.muted}>
+          Số dư của bạn: {user?.points ?? 'đăng nhập để xem'} điểm. Trừ {item.point_cost} điểm khi
+          người bán chấp nhận; hoàn nếu hủy.
+        </Text>
+      )}
       {user?.id !== item.owner_id && (
         <>
           <Field
@@ -1167,7 +1439,7 @@ function Detail({
       {item.reviews?.map((r, i) => (
         <View key={i} style={s.panel}>
           <Text>
-            {'★'.repeat(r.rating)} · {r.name}
+            {'★'.repeat(r.rating)} · {r.author_name}
           </Text>
           <Text style={s.muted}>{r.comment}</Text>
         </View>
@@ -1186,91 +1458,19 @@ function Profile({
 }) {
   const [name, setName] = useState(user.name),
     [school, setSchool] = useState(user.school),
-    [area, setArea] = useState(user.area);
+    [area, setArea] = useState(user.area),
+    [bio, setBio] = useState(user.bio || '');
   return (
     <View style={{ gap: 15 }}>
       <Field label="Họ tên" value={name} onChange={setName} />
       <Field label="Trường học" value={school} onChange={setSchool} />
       <Field label="Khu vực" value={area} onChange={setArea} />
-      <Button label="Lưu hồ sơ" disabled={busy} onPress={() => onSave({ name, school, area })} />
-    </View>
-  );
-}
-function Chat({
-  tx,
-  user,
-  onError,
-}: {
-  tx: Transaction;
-  user: User;
-  onError: (e: unknown) => void;
-}) {
-  const [messages, setMessages] = useState<Message[]>([]),
-    [body, setBody] = useState(''),
-    [sending, setSending] = useState(false),
-    [error, setError] = useState('');
-  const load = useCallback(async () => {
-    try {
-      setMessages(await api<Message[]>(`/transactions/${tx.id}/messages`));
-      setError('');
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Không tải được tin nhắn.');
-    }
-  }, [tx.id]);
-  useEffect(() => {
-    void load();
-    const timer = setInterval(() => void load(), 4000);
-    return () => clearInterval(timer);
-  }, [load]);
-  return (
-    <View style={{ gap: 14 }}>
-      <Text style={s.subtitle}>{tx.title}</Text>
-      <Text style={s.muted}>
-        Tin nhắn cập nhật mỗi 4 giây. Thống nhất địa điểm công cộng để giao nhận.
-      </Text>
-      {!!error && <Text style={{ color: '#A73434' }}>{error}</Text>}
-      <View style={{ gap: 10, minHeight: 180 }}>
-        {messages.map((m) => (
-          <View
-            key={m.id}
-            style={[
-              s.bubble,
-              {
-                alignSelf: m.sender_id === user.id ? 'flex-end' : 'flex-start',
-                backgroundColor: m.sender_id === user.id ? '#E5F1D8' : '#F0F2EE',
-              },
-            ]}
-          >
-            <Text style={s.label}>{m.sender_name}</Text>
-            <Text style={{ lineHeight: 23 }}>{m.body}</Text>
-            <Text style={{ fontSize: 10, color: C.muted }}>
-              {new Date(m.created_at).toLocaleTimeString('vi-VN')}
-            </Text>
-          </View>
-        ))}
-        {!messages.length && <Text style={s.muted}>Bắt đầu trao đổi với bên kia.</Text>}
-      </View>
-      {['pending', 'accepted'].includes(tx.status) ? (
-        <>
-          <Field label="Nội dung tin nhắn" value={body} onChange={setBody} multiline />
-          <Button
-            label={sending ? 'Đang gửi…' : 'Gửi tin nhắn'}
-            disabled={sending || !body.trim()}
-            onPress={() => {
-              setSending(true);
-              api(`/transactions/${tx.id}/messages`, 'POST', { body })
-                .then(async () => {
-                  setBody('');
-                  await load();
-                })
-                .catch(onError)
-                .finally(() => setSending(false));
-            }}
-          />
-        </>
-      ) : (
-        <Text style={s.muted}>Giao dịch đã kết thúc. Bạn vẫn xem được lịch sử tin nhắn.</Text>
-      )}
+      <Field label="Giới thiệu bản thân" value={bio} onChange={setBio} multiline />
+      <Button
+        label="Lưu hồ sơ"
+        disabled={busy}
+        onPress={() => onSave({ name, school, area, bio })}
+      />
     </View>
   );
 }
@@ -1323,7 +1523,7 @@ const s = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
-    paddingTop: Platform.OS === 'ios' ? 15 : 0,
+    paddingTop: 0,
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   logo: {
@@ -1345,10 +1545,23 @@ const s = StyleSheet.create({
     gap: 9,
   },
   overline: { fontSize: 10, fontWeight: '800', letterSpacing: 1.6, color: C.muted },
-  nav: { padding: 14, borderRadius: 10, marginTop: 4 },
+  nav: { padding: 11, borderRadius: 10, marginTop: 4 },
   navActive: { backgroundColor: '#EAF2E1' },
   navText: { fontSize: 14, color: C.muted },
   sidebarTip: { backgroundColor: '#F3F6ED', padding: 16, borderRadius: 14, gap: 15, marginTop: 30 },
+  featureRail: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  featureTile: {
+    flex: 1,
+    minWidth: 220,
+    padding: 18,
+    borderRadius: 17,
+    borderWidth: 1,
+    borderColor: C.line,
+    backgroundColor: '#FFFFFF',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
   hero: {
     backgroundColor: C.green,
     borderRadius: 20,
@@ -1373,7 +1586,7 @@ const s = StyleSheet.create({
     backgroundColor: C.white,
     borderWidth: 1,
     borderColor: C.line,
-    borderRadius: 15,
+    borderRadius: 18,
     padding: 20,
     gap: 14,
   },
@@ -1415,7 +1628,7 @@ const s = StyleSheet.create({
   card: {
     borderWidth: 1,
     borderColor: C.line,
-    borderRadius: 15,
+    borderRadius: 18,
     backgroundColor: C.white,
     overflow: 'hidden',
   },
@@ -1463,7 +1676,7 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: C.line,
     flexDirection: 'row',
-    paddingBottom: Platform.OS === 'ios' ? 20 : 4,
+    paddingBottom: 6,
   },
   backdrop: {
     flex: 1,

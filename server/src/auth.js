@@ -12,13 +12,13 @@ export async function verifyPassword(password, stored) {
   return timingSafeEqual(hash, Buffer.from(hex, 'hex'));
 }
 export const tokenHash = (value) => createHash('sha256').update(value).digest('hex');
-export function session(db, user) {
+export async function session(db, user) {
   const token = randomBytes(32).toString('hex');
-  db.prepare('INSERT INTO sessions VALUES (?,?,?)').run(
+  await db.query('INSERT INTO sessions(token_hash,user_id,expires_at) VALUES ($1,$2,$3)', [
     tokenHash(token),
     user.id,
     Date.now() + 7 * 24 * 60 * 60 * 1000,
-  );
+  ]);
   const { password_hash, ...safe } = user;
   return { token, user: safe };
 }

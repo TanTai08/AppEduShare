@@ -48,7 +48,7 @@ def make_doc():
     d.add_paragraph('EDUSHARE',style='Title').alignment=1
     p=d.add_paragraph('XÂY DỰNG ỨNG DỤNG ĐA NỀN TẢNG\nHỖ TRỢ MUA BÁN VÀ TRAO ĐỔI\nTÀI LIỆU HỌC TẬP CHO SINH VIÊN\nTRONG KHU VỰC',style='Heading 1');p.alignment=1
     d.add_paragraph('\nSinh viên: [Họ tên]\nMã sinh viên: [Mã sinh viên]\nLớp: [Lớp]\nGiảng viên hướng dẫn: [Họ tên]\nHọc phần: [Học phần]\nNăm học: [Năm học]')
-    d.add_paragraph('Phiên bản 1.0 — 10/11/2026\nMã nguồn: github.com/TanTai08/AppEduShare').alignment=1
+    d.add_paragraph('Phiên bản 2.0 — 10/11/2026\nMã nguồn: github.com/TanTai08/AppEduShare').alignment=1
     d.add_page_break()
     h=sec.header.paragraphs[0];h.text='EDUSHARE  |  ĐỒ ÁN ỨNG DỤNG ĐA NỀN TẢNG';h.style=d.styles['Caption']
     footer=sec.footer.paragraphs[0];footer.alignment=WD_ALIGN_PARAGRAPH.CENTER
@@ -64,7 +64,7 @@ def make_doc():
             else:
                 code=False
                 if lang=='mermaid':
-                    d.add_paragraph('React Native / Expo  →  REST API Express  →  SQLite',style='Caption')
+                    d.add_paragraph('React Native / Expo  →  REST / Socket.IO  →  PostgreSQL',style='Caption')
                     d.add_paragraph('Sơ đồ nguồn có thể xem trực tiếp trên GitHub trong báo cáo Markdown và tài liệu cơ sở dữ liệu.',style='Caption')
                 else:
                     p=d.add_paragraph('\n'.join(code_lines));p.style='No Spacing'
@@ -97,20 +97,8 @@ def make_doc():
     d.core_properties.title='EduShare — Báo cáo đồ án';d.core_properties.subject='Ứng dụng mua bán và trao đổi tài liệu học tập'
     d.save(DOCS/'EduShare_Bao_Cao_Do_An.docx')
 
-SLIDES=[
- ('EDUSHARE','Ứng dụng đa nền tảng mua bán và trao đổi tài liệu học tập', ['Sinh viên: [Họ tên] · Lớp: [Lớp]','Giảng viên: [Họ tên]','React Native / Expo · Node.js · SQLite']),
- ('01  Bài toán','Tài liệu đã dùng vẫn còn giá trị', ['Tin đăng phân tán, khó tìm đúng môn và khu vực','Nhiều người có thể hỏi cùng một cuốn sách','Cần trạng thái giao dịch, lịch sử trao đổi và đánh giá']),
- ('02  Mục tiêu & phạm vi','Kết nối sinh viên quanh trường', ['Mua bán · Đổi 1–1 · Tặng tài liệu bản giấy','Tìm theo tên, môn học, trường và khu vực','Giao nhận trực tiếp; không thu tiền trong ứng dụng','Chưa bán PDF, chưa xác minh email hoặc phát hành native']),
- ('03  Công nghệ','Một mã nguồn giao diện, API riêng', ['React Native + Expo + TypeScript','Node.js 24 / Express + Zod','SQLite: khóa ngoại, index và transaction','GitHub Actions: kiểm tra và build tự động']),
- ('04  Kiến trúc & dữ liệu','Giao diện → REST API → SQLite', ['9 bảng: users, sessions, listings, favorites, transactions, messages, reviews, reports, notifications','Client không truy cập trực tiếp database','Token phiên có hạn dùng; kiểm tra quyền ở API']),
- ('05  Giao diện','Web desktop và mobile web', ['Giao diện tiếng Việt, lọc theo trường/khu vực','Sidebar desktop, thanh điều hướng trên màn hình hẹp','Ảnh từ ứng dụng chạy thật; không phải chứng nhận native']),
- ('06  Vòng đời giao dịch','Pending → Accepted → Completed', ['Người đăng chấp nhận và hệ thống giữ chỗ','Hai bên nhắn tin, thống nhất giao nhận','Chỉ hoàn thành khi cả hai xác nhận','Hủy trước hoàn thành giải phóng tài liệu']),
- ('07  Tính nhất quán & quyền','Ngăn hai giao dịch giữ cùng tài liệu', ['BEGIN IMMEDIATE: kiểm tra + giữ chỗ trong một transaction','Đổi tài liệu giữ chỗ cả hai phía','Người ngoài không đọc được chat','Admin ẩn tin khóa tự hiện lại và hủy giao dịch mở']),
- ('08  Demo mua tài liệu','Hai tài khoản, một quy trình hoàn chỉnh', ['Minh Anh gửi yêu cầu, Hoàng Nam chấp nhận','Nhắn tin hẹn địa điểm công cộng','Xác nhận hai phía, đánh giá sau hoàn thành','Xem KICH_BAN_DEMO.md để thực hành']),
- ('09  Kiểm thử','Kiểm chứng bằng lệnh và trình duyệt', ['11/11 nhóm test HTTP API đạt','TypeScript và Expo web export đạt','Browser hai phiên: mua, chat, hoàn thành và đánh giá','Chưa đo tải lớn hoặc kiểm thử Android/iOS trên thiết bị']),
- ('10  Giới hạn & phát triển','Từ MVP đến sản phẩm vận hành', ['Ưu tiên: native, ảnh thật, email và audit log','Phân trang, tìm kiếm không dấu và danh mục chuẩn','PostgreSQL, WebSocket và thông báo đẩy khi mở rộng','Rà soát dependency; chưa sẵn sàng vận hành công khai']),
- ('11  Bàn giao','github.com/TanTai08/AppEduShare', ['Mã nguồn + SQL + dữ liệu demo','README chạy bằng Visual Studio Code','Báo cáo Word/Markdown + slide + kịch bản bảo vệ','Cảm ơn thầy cô và các bạn.']),
-]
+SLIDES=[('EDUSHARE 2', 'Kết nối sách, trao đổi tri thức', ['Sinh viên: [Họ tên] · Lớp: [Lớp]', 'Giảng viên: [Họ tên]', 'Expo SDK58 · Socket.IO · PostgreSQL']), ('01  Bài toán', 'Hỏi trước khi mua, an tâm khi nhận', ['Tìm sách theo trường, môn và khu vực', 'Trao đổi tình trạng, giá và điểm hẹn', 'Theo dõi giao dịch và tín hiệu uy tín']), ('02  Phạm vi', 'Mua bán · Trao đổi · Nhận sách bằng điểm', ['Tài liệu bản giấy, giao nhận trực tiếp', 'Chat trước mua, bản đồ và hồ sơ sao', 'FAQ + phiếu hỗ trợ riêng', 'Chưa thu tiền, tải PDF hoặc xác minh sinh viên']), ('03  Công nghệ', 'Một giao diện, API và realtime riêng', ['React Native / Expo SDK58 / TypeScript', 'Express + Socket.IO trên Node24', 'PostgreSQL17, pool và migrations', 'Leaflet/WebView, provider tiles có attribution']), ('04  Kiến trúc', 'REST + sự kiện riêng + PostgreSQL', ['14 bảng nghiệp vụ + schema_migrations', 'Conversations độc lập với transactions', 'Point ledger và tổng số dư nằm trong cùng transaction', 'Sự kiện chỉ phát sau khi commit']), ('05  Giao diện', 'Hộp thư, ví điểm, hồ sơ và hỗ trợ', ['Điều hướng mobile 5 mục, hỗ trợ safe area', 'Lối tắt giao dịch và số dư trên header', 'Ảnh web chạy thật; chưa phải nghiệm thu native']), ('06  Luồng giao dịch', 'Hai xác nhận, một lần thưởng', ['Chat trước khi tạo yêu cầu mua', 'Accept giữ chỗ, free trừ 20 điểm', 'Hai bên xác nhận: sell +10 mỗi bên', 'Hủy trước giao nhận: hoàn điểm đúng một lần']), ('07  Tính nhất quán', 'Không bán trùng, không chi vượt ví', ['Transaction PostgreSQL + khóa nghiệp vụ ngắn', 'Unique ledger và idempotency tin nhắn', 'Cap 30 điểm/ngày, một cặp thưởng 1 lần/24 giờ', 'Chỉ thành viên được chat và đánh giá giao dịch']), ('08  Demo', 'Hai tài khoản, trải nghiệm đầy đủ', ['Nhắn người bán trước mua và thấy trả lời realtime', 'Mua → xác nhận → xem ví → đánh giá', 'Ghim điểm hẹn, chỉ đường và gửi phiếu hỗ trợ', 'Xem KICH_BAN_DEMO.md để thực hành']), ('09  Kiểm thử', 'HTTP, socket và database thật', ['16/16 nhóm test PostgreSQL/API/socket/import đạt', 'Kiểm tra ledger, quyền, cạnh tranh và rollback', 'Web và native bundling; browser hai tài khoản', 'Tiles công cộng bị giới hạn trong môi trường test']), ('10  Giới hạn & tiếp theo', 'Nghiệm thu trên thiết bị trước vận hành', ['Một Node instance; nhiều instance cần adapter', 'Tiles cần dịch vụ/quota phù hợp; nhập tọa độ dự phòng', 'Chưa email/reset, ảnh thật, push hoặc LLM', 'Đo tải, chống gian lận và quy trình tranh chấp']), ('11  Bàn giao', 'github.com/TanTai08/AppEduShare', ['Mã nguồn, PostgreSQL, compose và import SQLite', 'README VS Code/Windows/iPhone, ERD và API', 'Báo cáo Word/Markdown + slide + kiểm thử', 'Cảm ơn thầy cô và các bạn.'])]
+
 def textbox(slide,x,y,w,h,text,size=22,color='172F26',bold=False):
     box=slide.shapes.add_textbox(PI(x),PI(y),PI(w),PI(h));frame=box.text_frame;frame.word_wrap=True
     for i,line in enumerate(text.split('\n')):
@@ -125,7 +113,7 @@ def make_slides():
         textbox(slide,.65,.45,12,.5,tag,15,GREEN,True)
         textbox(slide,.65,1.15,12,1.35,title,34,GREEN,True)
         if i==5:
-            pic=DOCS/'images/trang-chu-desktop.png';slide.shapes.add_picture(str(pic),PI(.8),PI(2.45),height=PI(4.4))
+            pic=DOCS/'images/v2/home-desktop.png';slide.shapes.add_picture(str(pic),PI(.8),PI(2.45),height=PI(4.4))
             textbox(slide,7.5,2.6,5,4,'\n\n'.join('• '+s for s in bullets),22)
         else:textbox(slide,.85,2.75,11.7,3.9,'\n\n'.join('• '+s for s in bullets),23)
         textbox(slide,.65,7.03,11,.3,'EDUSHARE  /  ĐỒ ÁN SINH VIÊN',10,'69776F')

@@ -1,321 +1,267 @@
-# BÁO CÁO ĐỒ ÁN
+# BÁO CÁO ĐỒ ÁN — EDUSHARE 2
 
 ## XÂY DỰNG ỨNG DỤNG ĐA NỀN TẢNG HỖ TRỢ MUA BÁN VÀ TRAO ĐỔI TÀI LIỆU HỌC TẬP CHO SINH VIÊN TRONG KHU VỰC
 
-Tên ứng dụng: **EduShare**
-
 - Trường/Khoa: [Điền theo đơn vị đào tạo]
-- Học phần: [Điền tên học phần]
-- Sinh viên thực hiện: [Họ tên]
-- Mã sinh viên: [Mã sinh viên]
-- Lớp: [Lớp]
-- Giảng viên hướng dẫn: [Họ tên giảng viên]
-- Năm học: [Điền năm học]
+- Sinh viên: [Họ tên] — Mã sinh viên: [Mã sinh viên] — Lớp: [Lớp]
+- Giảng viên hướng dẫn: [Họ tên] — Học phần: [Học phần]
+- Phiên bản: 2.0 — 10/11/2026
 - Mã nguồn: https://github.com/TanTai08/AppEduShare
-- Phiên bản báo cáo: 1.0 — 10/11/2026
 
-Thông tin cá nhân và đơn vị chưa được cung cấp nên để trống có nhãn. Nội dung mô tả đúng phạm vi MVP trong repository, không thay thế việc tự kiểm chứng và thực hiện quy định học thuật của đơn vị đào tạo.
+Thông tin cá nhân chưa được cung cấp nên để trống. Người nộp cần rà soát quy định trình bày và học thuật của trường, bổ sung phần công việc cá nhân thực tế và kết quả chạy trên thiết bị của mình.
 
 ## TÓM TẮT
 
-EduShare là ứng dụng hỗ trợ sinh viên tìm kiếm, mua bán, trao đổi và nhận tặng tài liệu học tập bản giấy trong cùng trường hoặc khu vực. Hệ thống giải quyết các công việc đăng tin, khám phá tài liệu, gửi yêu cầu, thống nhất giao nhận, xác nhận hoàn thành và đánh giá sau giao dịch. Phiên bản đồ án sử dụng React Native với Expo và TypeScript cho giao diện dùng chung; Node.js/Express cho API; SQLite cho cơ sở dữ liệu quan hệ cục bộ.
+EduShare 2 hỗ trợ sinh viên mua bán, trao đổi và nhận tài liệu bản giấy trong cùng trường hoặc khu vực. Từ bản MVP cục bộ, hệ thống được chuyển sang PostgreSQL và bổ sung chat realtime trước khi mua, ví điểm, điểm hẹn bản đồ, hồ sơ uy tín và hộp hỗ trợ. Giao diện sử dụng Expo SDK58/React Native/TypeScript, backend dùng Node.js/Express và Socket.IO.
 
-Trọng tâm kỹ thuật là kiểm soát quyền truy cập và tính nhất quán khi nhiều người cùng yêu cầu một tài liệu. Việc kiểm tra trạng thái, giữ chỗ và hủy yêu cầu xung đột được thực hiện trong một transaction database. Giao dịch chỉ hoàn thành sau khi cả hai bên xác nhận. Kiểm thử tích hợp sử dụng HTTP thật và SQLite trong bộ nhớ; giao diện web được kiểm tra qua trình duyệt với hai phiên đăng nhập độc lập. Không tiến hành khảo sát người dùng thật hoặc đo tải quy mô lớn trong phạm vi này.
+Trọng tâm kỹ thuật là bảo toàn trạng thái tài liệu, giao dịch và số dư khi nhiều người thao tác đồng thời. Giao dịch hoàn thành cần xác nhận hai phía; điểm được cập nhật cùng sổ ledger trong transaction; sự kiện realtime phát sau commit. Cuộc trò chuyện độc lập với đơn mua nên hai bên có thể hỏi tình trạng và thương lượng trước. Dữ liệu SQLite cũ có công cụ chuyển sang PostgreSQL chỉ đọc, không xóa nguồn.
 
-Từ khóa: React Native, Expo, TypeScript, SQLite, REST API, tài liệu học tập, trao đổi, transaction.
+Kết quả gồm mã nguồn, schema/migration, dữ liệu mẫu, kiểm thử HTTP/socket/database/import, ảnh giao diện và tài liệu vận hành. Phạm vi chưa bao gồm xác thực thanh toán/giao nhận ngoài đời, vận hành nhiều Node instances, tải ảnh/file số, AI sinh hoặc push khi app đóng. Kết quả bundling native không thay thế nghiệm thu trên Android/iPhone thật.
 
 ## MỤC LỤC
 
 1. Tổng quan đề tài
-2. Cơ sở công nghệ
+2. Cơ sở công nghệ và lựa chọn PostgreSQL
 3. Phân tích yêu cầu
-4. Thiết kế hệ thống
-5. Cài đặt chương trình
+4. Thiết kế dữ liệu và nghiệp vụ
+5. Cài đặt giao diện và dịch vụ
 6. Kiểm thử và đánh giá
-7. Triển khai, vận hành và quản lý mã nguồn
+7. Chuyển đổi, triển khai và vận hành
 8. Kết luận và hướng phát triển
 9. Tài liệu tham khảo và phụ lục
 
 ## CHƯƠNG 1. TỔNG QUAN ĐỀ TÀI
 
-### 1.1. Bối cảnh và vấn đề
+### 1.1. Bài toán
 
-Tài liệu học tập thường được sử dụng trong một hoặc một số học kỳ, sau đó vẫn còn giá trị đối với khóa học tiếp theo. Sinh viên có thể muốn bán lại sách, đổi tài liệu theo nhu cầu hoặc tặng cho người cần. Khi thông tin được đăng rải rác trong các nhóm trò chuyện, người tìm khó lọc theo môn học, khu vực và tình trạng; người đăng phải trả lời lặp lại và dễ nhận nhiều yêu cầu cho cùng một cuốn sách.
+Tài liệu đã dùng thường còn giá trị với sinh viên khóa sau. Tin đăng rải rác trong nhóm chat khó lọc theo trường, môn, giá và khu vực. Người mua cần hỏi tình trạng trước khi quyết định; người bán cần tránh giữ cùng một cuốn cho nhiều người. Khi giao dịch ngoài đời, hai bên cũng cần điểm hẹn và lịch sử trao đổi có thể xem lại.
 
-Đề tài đưa các hoạt động này vào một ứng dụng có cấu trúc dữ liệu thống nhất. Thay vì chỉ có nội dung tin đăng, hệ thống lưu cả yêu cầu, lịch sử trao đổi và trạng thái giao nhận. Việc lưu dấu vết hỗ trợ người dùng theo dõi hoạt động và giúp quản trị viên xử lý báo cáo. Các nhận định ở đây là mô tả bài toán thiết kế; báo cáo không đưa ra tỷ lệ tiết kiệm hay kết quả khảo sát khi chưa có dữ liệu thực nghiệm.
+Hệ thống tập trung thông tin tài liệu, liên hệ trước mua và quản lý trạng thái. Điểm thưởng khuyến khích hoạt động mua bán đã được hai bên xác nhận, sau đó có thể dùng để nhận sách miễn phí trong cộng đồng. Đánh giá gắn giao dịch tạo tín hiệu uy tín, nhưng không được coi là bảo đảm thanh toán hoặc xác minh danh tính. Báo cáo không đưa ra tỷ lệ tiết kiệm hay mức hài lòng vì chưa có khảo sát người dùng thật.
 
-### 1.2. Mục tiêu
+### 1.2. Mục tiêu và phạm vi
 
-- Xây dựng mã nguồn giao diện dùng chung cho web, Android và iOS.
-- Cho phép tìm tài liệu theo tên, môn học, trường, khu vực và hình thức giao dịch.
-- Hỗ trợ mua, nhận tặng và đổi một tài liệu lấy một tài liệu.
-- Kiểm soát việc giữ chỗ để giảm xung đột khi nhiều người cùng yêu cầu.
-- Cung cấp nhắn tin, thông báo trong ứng dụng, đánh giá và báo cáo vi phạm.
-- Cung cấp cơ sở dữ liệu, dữ liệu mẫu, hướng dẫn VS Code và bộ kiểm thử có thể chạy lại.
+- Giao diện dùng chung cho web, Android và iOS; bố cục tiếng Việt thích ứng màn hình.
+- Tìm kiếm, đăng tin, mua/đổi và nhận sách bằng điểm.
+- Chat riêng realtime trước và sau khi gửi yêu cầu mua.
+- Ghim điểm nhận công khai và mở chỉ đường.
+- Xem hồ sơ, sao, nhận xét từ các giao dịch hoàn thành.
+- FAQ hỗ trợ tự động và phiếu riêng cho quản trị viên.
+- Chuyển dữ liệu SQLite sang PostgreSQL và kiểm thử các bất biến quan trọng.
 
-### 1.3. Đối tượng và phạm vi
+Phiên bản này giao nhận trực tiếp, không thu hoặc giữ tiền trong ứng dụng. Tài liệu là bản giấy được phép chuyển nhượng; không cung cấp tải PDF. Tài khoản có trường/khu vực do người dùng khai báo, chưa xác minh sinh viên qua trường hoặc email.
 
-Đối tượng sử dụng là sinh viên có tài liệu hợp pháp cần chuyển nhượng và quản trị viên phụ trách nội dung. Phiên bản mẫu dùng Đà Nẵng và một số trường làm dữ liệu minh họa; người dùng có thể nhập khu vực/trường khác. Đây không phải hệ thống đã được trường xác nhận hoặc tích hợp dữ liệu sinh viên.
+### 1.3. Phương pháp
 
-MVP chỉ xử lý tài liệu bản giấy và giao nhận trực tiếp. Không thu tiền trong ứng dụng, không cung cấp dịch vụ giữ tiền, không phân phối PDF, không xác minh tự động tư cách sinh viên. Phát hành lên cửa hàng, kiểm thử thiết bị native, khảo sát thực tế và tích hợp email là các bước riêng. Giới hạn này giúp tập trung vào luồng giao dịch và tính đúng đắn của dữ liệu.
-
-### 1.4. Phương pháp thực hiện
-
-Quy trình gồm xác định tác nhân và use case, thiết kế mô hình dữ liệu, triển khai API, xây dựng giao diện, kiểm thử chức năng và chuẩn bị tài liệu vận hành. Chức năng được phát triển theo các luồng hoàn chỉnh từ UI đến database. Những quy tắc quan trọng được kiểm tra ở API/database thay vì chỉ kiểm tra trên giao diện.
+Thiết kế theo luồng end-to-end: yêu cầu → API → database → giao diện → kiểm thử. Quy tắc quan trọng được bảo vệ ở server/database. Các phần mới có kiểm thử kết quả quan sát được: quyền chat, cạnh tranh giữ chỗ, không đủ điểm, hoàn điểm, đánh giá và chuyển đổi dữ liệu. Không suy ra hiệu năng quy mô lớn từ kết quả chạy thử cục bộ.
 
 ## CHƯƠNG 2. CƠ SỞ CÔNG NGHỆ
 
-### 2.1. React Native và Expo
+### 2.1. React Native, Expo và TypeScript
 
-React Native mô tả giao diện bằng component và state, sau đó hiển thị qua nền tảng đích. Expo cung cấp công cụ phát triển, bundler và quy trình build. Dự án sử dụng React Native Web để hiển thị cùng component trên trình duyệt. TypeScript giúp kiểm tra cấu trúc dữ liệu trước khi chạy.
+React Native cập nhật giao diện theo component/state và cung cấp khả năng dùng chung mã cho nhiều nền tảng. Expo SDK58 được chọn để tương thích Expo Go SDK58 trên iPhone. React Native Web hiển thị cùng thành phần trong trình duyệt; TypeScript kiểm tra kiểu dữ liệu trước khi chạy. Safe Area xử lý vùng tai thỏ/thanh home thay cho khoảng đệm cố định.
 
-Thuật ngữ “reactive” cần được phân biệt: React cập nhật giao diện theo state, nhưng không đồng nghĩa dự án dùng reactive streams hoặc RxJS. Phiên bản này sử dụng React hooks và lời gọi HTTP bất đồng bộ. Chat được làm mới định kỳ mỗi 4 giây, không phải WebSocket thời gian thực.
+React không đồng nghĩa với reactive streams hoặc RxJS. Dự án sử dụng hooks, REST bất đồng bộ và sự kiện Socket.IO; không trình bày đây là backend reactive streams.
 
-### 2.2. Node.js và Express
+### 2.2. Node.js, Express và Socket.IO
 
-Node.js chạy API phía máy chủ. Express tổ chức endpoint, middleware xác thực, giới hạn request và xử lý lỗi. Payload được kiểm tra bằng Zod. Helmet bổ sung header bảo vệ; CORS giới hạn origin web được đọc response theo cấu hình. CORS không thay thế xác thực và phân quyền.
+Express tổ chức API JSON, Zod kiểm tra dữ liệu, middleware xác thực/phân quyền bảo vệ tài nguyên. Socket.IO quản lý kết nối realtime, reconnect và sự kiện. Ghi tin nhắn vẫn đi qua REST để có validation/idempotency nhất quán; sau commit server đẩy tới room người nhận. Client không được tự chọn room user khác.
 
-Node 24 được chọn vì cung cấp API SQLite tích hợp mà mã nguồn sử dụng. Dự án không có bước biên dịch backend và không yêu cầu cài driver database native riêng. API SQLite đồng bộ phù hợp phạm vi nhỏ; tác vụ băm mật khẩu sử dụng scrypt bất đồng bộ để giảm chặn event loop.
+Node 24 chạy API và công cụ chuyển đổi SQLite. Mật khẩu băm scrypt bất đồng bộ. Token phiên ngẫu nhiên lưu hash và hạn dùng; logout thu hồi phiên và ngắt socket tương ứng. Web lưu token trong sessionStorage để demo; native dùng SecureStore. Khi production cần xem xét cookie HttpOnly cho web và chính sách phiên phù hợp.
 
-### 2.3. SQLite và lựa chọn cơ sở dữ liệu
+### 2.3. Vì sao chuyển PostgreSQL
 
-Các thực thể người dùng, tin đăng, giao dịch và đánh giá có quan hệ rõ ràng. Cơ sở dữ liệu quan hệ cho phép dùng khóa ngoại, unique index, check constraint và transaction để bảo vệ dữ liệu. SQLite lưu trong file, giúp giảng viên và sinh viên chạy lại dự án nhanh mà không phải cấu hình dịch vụ máy chủ database.
+Bản đầu dùng SQLite để dễ chạy đồ án mà không cài dịch vụ database. Khi thêm ví điểm và realtime, hệ thống cần pool kết nối, transaction giữa nhiều thực thể, khả năng quản lý database riêng và công cụ vận hành. PostgreSQL phù hợp mô hình quan hệ giữa người dùng, tin đăng, giao dịch, ledger và đánh giá.
 
-| Tiêu chí        | SQLite trong đồ án             | PostgreSQL khi mở rộng                             |
-| --------------- | ------------------------------ | -------------------------------------------------- |
-| Cài đặt         | Nhúng trong API, tự tạo file   | Cần dịch vụ và thông tin kết nối                   |
-| Mô hình quan hệ | Khóa ngoại, index, transaction | Quan hệ, transaction, tính năng truy vấn phong phú |
-| Ghi đồng thời   | Một writer tại một thời điểm   | Phù hợp nhiều giao dịch ghi và nhiều API instance  |
-| Vận hành        | Sao lưu file nhất quán         | Backup, replication và phân quyền chuyên dụng      |
-| Phù hợp         | Demo cục bộ, một instance      | Hệ thống nhiều người dùng khi đã kiểm chứng tải    |
+| Tiêu chí         | SQLite bản đầu         | PostgreSQL bản mới                            |
+| ---------------- | ---------------------- | --------------------------------------------- |
+| Cài đặt          | File cục bộ            | Dịch vụ riêng hoặc Docker                     |
+| Truy cập         | API một instance       | Pool kết nối, nhiều kết nối đồng thời         |
+| Bảo toàn dữ liệu | Transaction/constraint | Transaction/constraint, row và advisory locks |
+| Vận hành         | Sao lưu file nhất quán | pg_dump, pgAdmin, quyền DB, volume            |
+| Mục tiêu         | Demo nhanh             | Phát triển backend quan hệ thực tế hơn        |
 
-SQLite là lựa chọn cho phiên bản đã cài đặt, thay cho đề xuất Supabase/PostgreSQL ban đầu nhằm đáp ứng yêu cầu chạy cục bộ. Không thể chuyển sang PostgreSQL chỉ bằng đổi biến môi trường; cần migration và adapter truy vấn mới.
+Không cho điện thoại truy cập PostgreSQL trực tiếp. Connection string chỉ ở backend. PostgreSQL không tự làm chat realtime; cần Socket.IO hoặc cơ chế đẩy khác.
 
-### 2.4. GitHub và Visual Studio Code
+### 2.4. Leaflet và dịch vụ bản đồ
 
-Git lưu lịch sử mã nguồn; GitHub lưu repository và chạy CI. Lockfile cố định cây phụ thuộc cho `npm ci`. VS Code được sử dụng để sửa TypeScript/JavaScript, chạy terminal, debug API và xem database qua extension. Repository có task chạy ứng dụng và task kiểm tra toàn bộ.
+Leaflet điều khiển bản đồ; mã JS/CSS được đóng gói cùng app và giữ BSD license. Web dùng iframe, native dùng WebView. Tiles ảnh nền là dịch vụ bên ngoài, mặc định OpenStreetMap; phải giữ attribution, tuân thủ quota và chính sách nhà cung cấp. Không tải hàng loạt hoặc hỗ trợ tiles offline trong phạm vi này. Có thể cấu hình provider khác được phép qua biến môi trường public.
+
+Điểm lưu là địa điểm hẹn tự chọn, không có theo dõi GPS liên tục. Tên và tọa độ được hiển thị công khai theo tin đăng; người bán nên chọn cổng trường, thư viện hoặc nơi công cộng.
 
 ## CHƯƠNG 3. PHÂN TÍCH YÊU CẦU
 
 ### 3.1. Tác nhân
 
-| Tác nhân      | Nhiệm vụ                                                                     |
-| ------------- | ---------------------------------------------------------------------------- |
-| Khách         | Xem, tìm kiếm, lọc và đọc chi tiết tài liệu                                  |
-| Sinh viên     | Quản lý tài khoản, tin đăng, yêu thích, giao dịch, chat, đánh giá và báo cáo |
-| Quản trị viên | Xem thống kê, ẩn tin vi phạm, xử lý báo cáo                                  |
+| Tác nhân  | Quyền                                                                       |
+| --------- | --------------------------------------------------------------------------- |
+| Khách     | Tìm/xem sách, hồ sơ public và hỏi FAQ                                       |
+| Sinh viên | Hồ sơ riêng, tin đăng, chat, giao dịch, ví điểm, đánh giá, báo cáo và phiếu |
+| Quản trị  | Chức năng sinh viên, kiểm duyệt, audit và xử lý phiếu                       |
 
-Quản trị viên vẫn sử dụng được các chức năng sinh viên. Đăng ký công khai không nhận trường role; không thể tự nâng quyền từ client. Vai trò admin demo chỉ do seed tạo trong môi trường thử nghiệm.
+Đăng ký không nhận role hoặc points từ client. Các tài khoản demo/admin chỉ do seed trong môi trường phát triển tạo.
 
 ### 3.2. Yêu cầu chức năng
 
-| Mã   | Yêu cầu               | Kết quả mong đợi                                        |
-| ---- | --------------------- | ------------------------------------------------------- |
-| FR01 | Đăng ký và xác thực   | Tài khoản mới có quyền sinh viên, phiên có hạn dùng     |
-| FR02 | Cập nhật hồ sơ        | Chỉ sửa hồ sơ của mình                                  |
-| FR03 | Quản lý tin đăng      | Đăng, sửa, ẩn/hiện theo quyền và trạng thái             |
-| FR04 | Tìm kiếm và lọc       | Trả tài liệu active theo điều kiện                      |
-| FR05 | Yêu thích             | Không lưu trùng, xem danh sách riêng                    |
-| FR06 | Mua và nhận tặng      | Gửi yêu cầu cho tài liệu của người khác                 |
-| FR07 | Trao đổi              | Đề nghị bằng một tài liệu exchange đang active của mình |
-| FR08 | Giữ chỗ và hoàn thành | Không giữ trùng, cả hai xác nhận mới completed          |
-| FR09 | Chat                  | Chỉ hai bên giao dịch truy cập được                     |
-| FR10 | Đánh giá              | Chỉ sau hoàn thành và một lần mỗi bên                   |
-| FR11 | Thông báo             | Chỉ người nhận được đọc/đánh dấu                        |
-| FR12 | Báo cáo và kiểm duyệt | Admin ẩn tin, xử lý báo cáo, khóa việc tự hiện lại      |
+| Mã   | Chức năng         | Tiêu chí                                                 |
+| ---- | ----------------- | -------------------------------------------------------- |
+| FR01 | Xác thực/hồ sơ    | Email duy nhất, phiên có hạn, sửa hồ sơ của mình         |
+| FR02 | Tin đăng/tìm kiếm | Bán/đổi/free, lọc trường/khu vực, trạng thái rõ          |
+| FR03 | Chat trước mua    | Không cần tạo transaction; chỉ hai bên đọc/ghi           |
+| FR04 | Realtime          | Tin mới, typing, chưa đọc, reconnect và lịch sử          |
+| FR05 | Giao dịch         | Giữ chỗ nguyên tử, cả hai xác nhận mới hoàn thành        |
+| FR06 | Điểm              | +10 mỗi bên, -20 nhận free, refund, chống xử lý lặp      |
+| FR07 | Map               | Chọn/lưu điểm hẹn và mở chỉ đường                        |
+| FR08 | Uy tín            | Sao/nhận xét theo giao dịch, ẩn dữ liệu riêng tư         |
+| FR09 | Hỗ trợ            | FAQ và phiếu riêng chủ phiếu/admin                       |
+| FR10 | Kiểm duyệt        | Báo cáo, khóa tin, hủy giao dịch liên quan và audit      |
+| FR11 | Chuyển đổi        | Import nguồn SQLite chỉ đọc, đích rỗng, rollback khi lỗi |
 
-### 3.3. Yêu cầu phi chức năng
+### 3.3. Quy tắc điểm đã chọn
 
-- Giao diện tiếng Việt, thích ứng màn hình desktop và điện thoại.
-- Mật khẩu không lưu dạng rõ; session token ngẫu nhiên và chỉ lưu hash phía server.
-- API kiểm tra dữ liệu, quyền sở hữu và tư cách thành viên giao dịch.
-- Truy vấn có tham số để không ghép trực tiếp dữ liệu người dùng vào SQL.
-- Các thay đổi giữ chỗ có tính nguyên tử; lỗi giữa chừng phải rollback.
-- Có mã lỗi và thông báo đủ để người dùng thử lại khi mất kết nối.
-- Có quy trình cài đặt, dữ liệu demo, kiểm thử và build có thể lặp lại.
+Mua bán hoàn thành thưởng 10 điểm cho mỗi bên. Nhận một sách miễn phí cần 20 điểm, trừ khi người đăng chấp nhận; yêu cầu pending chưa trừ. Hủy accepted trước giao nhận hoàn lại điểm đúng một lần. Đổi sách và nhận tặng không tạo thêm điểm. Điểm không chuyển thành tiền và không chuyển cho người cho sách.
 
-Chưa đặt SLA hay ngưỡng số người dùng đồng thời vì chưa có đo tải. Tính đa nền tảng ở cấp mã nguồn không thay thế nghiệm thu từng hệ điều hành.
+Để giảm tích điểm giả cơ bản, mỗi cặp tài khoản được thưởng tối đa một lần trong 24 giờ và mỗi người tối đa 30 điểm/ngày UTC. Các giới hạn không chứng minh giao dịch ngoài đời là thật; cần chống gian lận và giải quyết tranh chấp sâu hơn khi vận hành thực tế. Demo user mới có 20 điểm mẫu ghi rõ lý do; đăng ký bình thường có 0 điểm.
 
-### 3.4. Use case mua tài liệu
+### 3.4. Yêu cầu phi chức năng
 
-Tiền điều kiện: người gửi đã đăng nhập; tài liệu active và không thuộc người gửi. Luồng chính: người mua gửi yêu cầu, người đăng xem và chấp nhận, hệ thống giữ chỗ, hai bên thống nhất giao nhận qua chat, mỗi bên xác nhận, hệ thống hoàn thành và mở đánh giá.
+Dữ liệu được kiểm tra ở API; SQL dùng tham số; quyền sở hữu và thành viên được xác thực. Các thay đổi ví/trạng thái phải atomic. Thông báo lỗi không lộ chi tiết DB. UI cho biết tình trạng kết nối, giữ nội dung khi gửi thất bại và cho thử lại. Không đặt SLA hoặc số người dùng đồng thời khi chưa đo tải. Cần hướng dẫn đủ để tái hiện bằng VS Code và PostgreSQL cục bộ.
 
-Luồng ngoại lệ: dữ liệu không hợp lệ bị từ chối; yêu cầu lặp trả lỗi xung đột; tài liệu đã được giữ chỗ không được nhận giao dịch mới; người ngoài không được xem chat; một bên hủy trước khi hoàn thành thì tài liệu được giải phóng. Phiên bản hiện tại cho phép một bên hủy khi giao dịch vẫn accepted, kể cả sau khi bên kia đã xác nhận; cần quy trình tranh chấp chặt hơn khi vận hành thật.
+## CHƯƠNG 4. THIẾT KẾ DỮ LIỆU VÀ NGHIỆP VỤ
 
-### 3.5. Use case trao đổi
-
-Người gửi chọn một tài liệu của người khác có hình thức exchange và đề xuất một tài liệu exchange active của mình. Khi người nhận chấp nhận, cả hai tài liệu được giữ chỗ trong cùng transaction. Mọi yêu cầu pending giao nhau với một trong hai tài liệu đều bị hủy. Nếu hủy giao dịch accepted thì cả hai tài liệu trở về active; nếu cả hai xác nhận thì cả hai chuyển completed.
-
-### 3.6. Quy tắc nghiệp vụ
-
-Không giao dịch với chính mình; không sửa tin reserved/completed; tin bị admin khóa không tự hiện lại; giá bán là số nguyên tối thiểu 1.000 VNĐ; tài liệu tặng/đổi có giá 0. Xác nhận giao nhận là khai báo của người dùng, không phải bằng chứng thanh toán. Đánh giá phải gắn giao dịch đã hoàn thành, không được đánh giá tùy ý trên hồ sơ.
-
-## CHƯƠNG 4. THIẾT KẾ HỆ THỐNG
-
-### 4.1. Kiến trúc ba lớp
+### 4.1. Kiến trúc
 
 ```mermaid
 flowchart LR
- A[React Native + Expo / Web, Android, iOS] -->|REST JSON + Bearer token| B[Express API / Auth, Validation, Business rules]
- B -->|Prepared SQL + Atomic transaction| C[(SQLite)]
- D[GitHub Actions] --> E[Typecheck + API tests + Web build]
+ A[Expo / Web, Android, iOS] -->|REST + token| B[Express / Auth + validation]
+ A <-->|Socket.IO private events| C[Realtime server]
+ B --> D[(PostgreSQL)]
+ B -->|after commit| C
+ A --> E[Leaflet / tile provider / directions]
 ```
 
-Lớp giao diện không truy cập file database. API xác thực mọi request riêng tư, kiểm tra dữ liệu và thực hiện quy tắc nghiệp vụ. Database bảo vệ quan hệ và một số bất biến bằng constraint. Mô hình này cho phép thay giao diện hoặc database mà vẫn giữ hợp đồng API, dù chuyển database vẫn cần thay adapter.
+Hệ thống có 14 bảng nghiệp vụ và schema_migrations. ERD chi tiết trong CO_SO_DU_LIEU.md. Conversations độc lập với transactions; messages tham chiếu conversation. Point_ledger giữ sự thay đổi, users.points giữ tổng hiện tại. Reviews gắn transaction và tác giả, không cho đánh giá tùy ý trên hồ sơ.
 
-### 4.2. Thiết kế dữ liệu
+### 4.2. Trạng thái giao dịch
 
-Hệ thống gồm chín bảng: users, sessions, listings, favorites, transactions, messages, reviews, reports và notifications. Khóa chính thực thể dùng UUID; phiên dùng token_hash làm khóa. Các quan hệ được mô tả chi tiết trong CO_SO_DU_LIEU.md và schema.sql.
+Tin đăng gồm active/reserved/completed/hidden; giao dịch pending/accepted/completed/cancelled. Hai cờ xác nhận được ghi riêng. Giao dịch lưu snapshot kind/price/point_cost; thay đổi điều kiện trước accept cần gửi lại yêu cầu. Khi một bên đã xác nhận, không cho hủy thông thường để hạn chế việc phủ nhận giao nhận; chủ phiếu nhờ quản trị xử lý.
 
-Tin đăng lưu trường và khu vực riêng để mô tả nơi có tài liệu, có thể khác hồ sơ của người đăng. Hai trường này đang là chuỗi; chuẩn hóa thành danh mục là hướng cải tiến. reviews gắn author và target, chỉ tạo thông qua giao dịch. messages gắn transaction để giới hạn thành viên theo đúng hai bên giao dịch.
+Khi accept, server lấy khóa nghiệp vụ trong PostgreSQL transaction, kiểm tra tài liệu vẫn active, khóa bản ghi cần sửa, kiểm tra số dư, ghi ledger, giữ chỗ và hủy các yêu cầu pending giao nhau. Đổi sách giữ cả hai tài liệu. Nếu thiếu điểm hoặc có lỗi, rollback toàn bộ. Khi cả hai xác nhận, chuyển completed rồi xét thưởng.
 
-### 4.3. Thiết kế trạng thái và tính nhất quán
+### 4.3. Ledger và khóa
 
-Tin đăng có active, reserved, completed và hidden. Giao dịch có pending, accepted, completed và cancelled. Hai cờ buyer_confirmed và seller_confirmed lưu việc xác nhận riêng. Không suy ra hoàn thành từ một phía.
+Unique(user, transaction, reason) ngăn thưởng/trừ/hoàn hai lần. Balance có check không âm. Cập nhật users.points và ledger nằm cùng transaction. Kiểm thử đối chiếu tổng delta với số dư mọi user.
 
-Việc giữ chỗ dùng BEGIN IMMEDIATE để lấy quyền ghi trước khi kiểm tra/cập nhật. Dưới khóa ghi, hệ thống xác nhận các tài liệu vẫn active rồi chuyển reserved. Nếu có bất kỳ lỗi nào, rollback toàn bộ thay đổi và thông báo. Điều này xử lý xung đột ở tầng dữ liệu, kể cả khi người dùng gửi request ngoài UI.
+Bản này dùng advisory lock chung ngắn cho các thay đổi marketplace để đơn giản hóa thứ tự khóa và tính đúng đắn trên nhiều kết nối. Chat, tìm kiếm và hồ sơ không dùng khóa đó. Đây là lựa chọn phạm vi đồ án; khi mở rộng cần đo tải và giảm khóa tới tài liệu/ví liên quan theo thứ tự nhất quán, không tuyên bố đã tối ưu ghi đồng thời lớn.
 
-### 4.4. Thiết kế giao diện
+### 4.4. Chat và bảo mật
 
-Trang chủ có thanh nhận diện, điều hướng, giới thiệu, bộ lọc và thẻ tài liệu. Desktop có sidebar; màn hình hẹp dùng thanh điều hướng dưới. Các biểu mẫu dùng modal cho xác thực, đăng tin, chi tiết, chat, báo cáo và đánh giá. Tình trạng tải, lỗi API và thông báo thao tác được hiển thị trên giao diện.
+Token xác thực handshake, server gán room user. Đọc/gửi qua REST kiểm tra thành viên. Client_id sinh một lần cho lần gửi để retry không nhân đôi; seq BIGINT làm cursor. Initial lấy 50 tin cuối, tải thêm trước seq hoặc đồng bộ sau seq khi reconnect. Tin tồn tại trong DB trước sự kiện phát; mất kết nối không xóa lịch sử.
 
-Không sử dụng ảnh tài liệu thật trong MVP: bìa được dựng từ màu và tên tài liệu. Điều này được nêu trong tài liệu để tránh hiểu nhầm rằng hình minh họa là bằng chứng tình trạng sách. Khi bổ sung tải ảnh phải kiểm tra dung lượng, MIME và chữ ký file.
+Logout xóa session và ngắt socket của token. Socket hết hạn được kiểm tra định kỳ. Nhiều Node instances cần adapter chung và invalidation phiên trên mọi instance; bản này chưa có Redis adapter. CORS chỉ hỗ trợ giới hạn origin, không thay phân quyền.
 
-### 4.5. Thiết kế xác thực và phân quyền
+### 4.5. Hồ sơ và hỗ trợ
 
-Mật khẩu được băm bằng scrypt với salt ngẫu nhiên. Token phiên có 32 byte ngẫu nhiên; database lưu SHA-256 token và thời điểm hết hạn. Đăng xuất xóa phiên hiện tại. Native lưu token trong SecureStore, web lưu sessionStorage để phục vụ demo.
+Hồ sơ public trả tên, trường/khu vực, bio, số giao dịch, sao và tin active; không trả email, số dư, password hash hay session. Badge đánh giá cao cần >=5 nhận xét và trung bình >=4,5 sao, không phải xác minh danh tính.
 
-API kiểm tra chủ tin trước sửa/ẩn, kiểm tra hai bên trước truy cập tin nhắn và kiểm tra role admin trước kiểm duyệt. Không đưa service key hoặc thông tin GitHub vào mã nguồn. Khi triển khai thật cần HTTPS và đánh giá mô hình cookie HttpOnly cho web, cùng quy trình xác minh và khôi phục tài khoản.
+FAQ trả lời theo chủ đề đã biên soạn và nêu rõ không phải mô hình AI sinh. Các trường hợp cụ thể tạo phiếu; chỉ chủ phiếu/admin đọc và trả lời. Admin đóng phiếu; client đang kết nối nhận sự kiện để tải cập nhật. Không hứa thời gian phản hồi từ người hỗ trợ.
 
 ## CHƯƠNG 5. CÀI ĐẶT CHƯƠNG TRÌNH
 
-### 5.1. Cấu trúc dự án
+### 5.1. Backend
 
-Monorepo dùng npm workspaces gồm apps/mobile và server. Thư mục mobile chứa App.tsx, api.ts và cấu hình Expo; server/src chứa ứng dụng Express, xác thực, database, SQL và seed. Kiểm thử đặt trong server/test. Tài liệu và ảnh kết quả nằm trong docs; workflow CI nằm trong .github/workflows.
+Express routes trong app.js gọi các hàm nghiệp vụ domain.js và query helpers. Pool pg có giới hạn kết nối; atomic hỗ trợ retry giới hạn cho deadlock/serialization failure. Queue sự kiện được phát sau COMMIT, không phát trạng thái đã rollback. Migrate dùng version và advisory lock để các API khởi động đồng thời không cùng tạo bảng.
 
-Các lệnh npm chạy từ thư mục gốc giúp giảm nhầm thư mục. npm run dev khởi động cả API và Expo web; npm run db:seed tạo dữ liệu; npm run check chạy typecheck, API tests và web build. package-lock.json được commit để các máy dùng cùng cây phụ thuộc.
+Payload kiểm tra bằng Zod. Helmet, CORS và rate limits bảo vệ mức cơ bản. Query lỗi dữ liệu/ID trả 400, không có phiên 401, thiếu quyền 403, tài nguyên không có 404, xung đột 409. Lỗi nội bộ không trả chi tiết DB cho client.
 
-### 5.2. Khởi tạo và dữ liệu mẫu
+### 5.2. Frontend
 
-Schema được chạy khi API/seed mở database, dùng CREATE TABLE IF NOT EXISTS. Seed tạo hai sinh viên và một admin demo, cùng tám tài liệu thuộc ba hình thức. Seed không xóa dữ liệu, không đổi mật khẩu tài khoản có sẵn và chỉ thêm tin mẫu khi chưa có tin nào. Đây là khởi tạo ban đầu, chưa phải cơ chế migration nâng cấp schema có version.
+App giữ các màn khám phá, tin riêng, yêu thích, giao dịch, thông báo, hồ sơ và quản trị. Module Community thêm Inbox, RealtimeChat, Wallet, UserProfile và SupportBox. Hook useRealtime quản lý socket theo tài khoản. Mobile hiển thị năm tab chính; các chức năng khác đi từ hồ sơ/lối tắt/nút hỗ trợ. Header hiển thị điểm hiện tại; SafeArea tránh tai thỏ.
 
-Đường dẫn database mặc định là server/data/edushare.sqlite. Thư mục này bị loại khỏi Git. Khi cần cấu trúc mới trong quá trình phát triển, phải dùng database mới hoặc viết migration phù hợp; không giả định CREATE TABLE IF NOT EXISTS sẽ tự thêm cột vào bảng cũ.
+Biểu mẫu tin có tên điểm hẹn, map picker và lat/lon thủ công. Tọa độ được kiểm tra cả client và server. Web chỉ nhận postMessage từ iframe của chính component, native kiểm tra cấu trúc tọa độ; không nhúng nội dung mô tả người dùng vào script bản đồ. Link chỉ đường dùng tọa độ đã kiểm tra.
 
-### 5.3. Cài đặt các module
+### 5.3. Điểm và trải nghiệm
 
-Module tài khoản cung cấp register, login, logout và cập nhật hồ sơ. Module tài liệu cung cấp tìm kiếm, lọc, chi tiết, yêu thích và quản lý tin riêng. Tìm kiếm LIKE dùng tham số và escape ký tự wildcard; hiện chưa chuẩn hóa tìm không dấu tiếng Việt.
+Ví cho biết số dư, quy tắc, từng delta, thời điểm và số dư sau thay đổi. Tin free hiển thị số điểm cần nhận để không hiểu nhầm không cần điều kiện. UI cho biết điểm bị trừ lúc accept và sẽ hoàn nếu hủy. Khi thiếu điểm, yêu cầu accept thất bại nhưng tài liệu không bị giữ chỗ mồ côi.
 
-Module giao dịch tạo yêu cầu, giữ chỗ, hủy và xác nhận hai phía. Module chat giới hạn truy cập theo transaction; giao diện tự gọi lại mỗi 4 giây và chỉ gửi tin khi giao dịch pending/accepted. Module đánh giá kiểm tra completed và unique theo tác giả. Module quản trị hiển thị thống kê và báo cáo, ẩn tin vi phạm và hủy giao dịch mở liên quan để tránh giữ chỗ mồ côi.
+### 5.4. Giới hạn triển khai
 
-### 5.4. Xử lý lỗi và giới hạn
-
-Payload không hợp lệ trả 400; phiên sai trả 401; thiếu quyền trả 403; tài nguyên không có trả 404; xung đột trạng thái trả 409. API giới hạn JSON ở 64 KB và dùng rate limit cho đăng nhập lẫn request chung. Lỗi nội bộ được log phía server nhưng không trả chi tiết database cho client.
-
-Client có timeout 15 giây, thông báo khi không kết nối được API. Một số cải tiến như retry có idempotency, phân trang chat, đồng bộ ngoại tuyến và quản lý reconnect chưa có. Các thao tác quan trọng cần tránh gửi lặp bằng trạng thái nút bận, nhưng tính đúng đắn vẫn dựa trên server.
-
-### 5.5. Chạy trên máy phát triển
-
-Clone repository, mở trong VS Code, cài Node 24, chạy npm ci, sao chép hai file .env.example thành .env, chạy npm run db:seed rồi npm run dev. Web ở localhost:8081, API ở localhost:4000. Hướng dẫn chi tiết cho Windows, Android Emulator, iOS Simulator và thiết bị thật nằm trong README.
-
-Android Emulator dùng 10.0.2.2 để truy cập API trên máy; điện thoại thật dùng IPv4 LAN của máy trong cùng mạng. Không dùng localhost trên điện thoại để chỉ máy tính. Đổi URL API cần khởi động lại Expo vì biến EXPO_PUBLIC được đưa vào bundle.
+Bìa sách vẫn là minh họa tạo bằng UI, chưa tải ảnh thật. Tìm kiếm ILIKE chưa chuẩn hóa không dấu; các danh sách ngoài chat có giới hạn số lượng. API hiện phù hợp một Node instance. Chưa có email xác minh/reset, push lúc app đóng, thanh toán/file số hoặc LLM. Bản đồ nền phụ thuộc kết nối/chính sách dịch vụ tiles, dù điều khiển đã đóng gói cục bộ.
 
 ## CHƯƠNG 6. KIỂM THỬ VÀ ĐÁNH GIÁ
 
-### 6.1. Chiến lược kiểm thử
+### 6.1. Phương pháp
 
-Kiểm thử tập trung vào kết quả quan sát được và các ranh giới quyền truy cập. API test khởi tạo SQLite trong bộ nhớ và chạy Express trên cổng tạm, sau đó dùng HTTP fetch. Cách này kiểm tra được routing, validation, auth và dữ liệu mà không làm thay đổi database phát triển.
+Kiểm thử API chạy Express/Socket.IO thật trên cổng tạm, dùng PostgreSQL thật với schema tạm riêng. Sau test chỉ drop schema test, không truncate dữ liệu app. Test import tạo SQLite fixture, nhập vào schema PostgreSQL rỗng và kiểm tra cả nguồn lẫn đích. TypeScript kiểm tra kiểu; Expo export kiểm tra bundling web/iOS/Android.
 
-TypeScript được kiểm tra bằng tsc --noEmit. Expo export kiểm tra khả năng đóng gói frontend web. Browser test dùng Chromium và hai browser context độc lập để thao tác giao diện như hai người dùng, tránh dùng chung phiên đăng nhập. Các ảnh trong docs/images là kết quả từ ứng dụng thực tế chạy với dữ liệu demo.
+### 6.2. Kết quả chức năng
 
-### 6.2. Nhóm ca kiểm thử
+16 nhóm test bao gồm xác thực, validation, search escaping, quyền tin, chat trước mua, idempotency/cursor, socket riêng tư và logout, hai xác nhận, thưởng đúng một lần, cạnh tranh giữ chỗ, thiếu điểm, refund một lần, không chi vượt ví, cap/cooldown, đổi sách, public reputation, kiểm duyệt, support và tổng ledger. Một số nhóm chứa nhiều assertion; không đồng nhất số nhóm với số request.
 
-| Nhóm            | Nội dung                                                                   |
-| --------------- | -------------------------------------------------------------------------- |
-| Xác thực        | Đăng ký, email trùng không phân biệt hoa thường, login sai, logout thu hồi |
-| Validation      | Payload sai, chặn sửa role, giới hạn tham số                               |
-| Tìm kiếm        | Lọc và xử lý ký tự wildcard/chuỗi SQL như dữ liệu                          |
-| Quyền sở hữu    | Chặn sửa/ẩn tin người khác, cập nhật đúng hồ sơ                            |
-| Mua bán         | Chặn tự mua, yêu cầu trùng, chặn người ngoài đọc chat                      |
-| Hoàn thành      | Một bên xác nhận chưa hoàn thành, không xác nhận lặp                       |
-| Đánh giá        | Chỉ sau completed, mỗi bên một lần                                         |
-| Cạnh tranh      | Hai yêu cầu chấp nhận chỉ một giữ được tài liệu                            |
-| Trao đổi        | Kiểm tra chủ tài liệu, giữ/giải phóng hai phía, hủy yêu cầu giao nhau      |
-| Quản trị        | Ẩn tin giải phóng giao dịch, khóa tự hiện, xử lý báo cáo                   |
-| Thông báo/phiên | Cách ly người nhận, từ chối phiên hết hạn                                  |
+Browser kiểm tra hai phiên sinh viên độc lập: chat trước mua và trả lời không cần refresh, gửi yêu cầu và cập nhật trạng thái realtime, xác nhận, đánh giá, lịch sử thưởng, nhận free và hủy hoàn điểm, FAQ, tạo phiếu. Kiểm tra map click làm thay đổi tọa độ, lưu và xuất hiện nút chỉ đường. Chi tiết kết quả/chưa kiểm chứng nằm trong KIEM_THU.md.
 
-Danh sách chính xác và kết quả lệnh được ghi tại KIEM_THU.md. Test cạnh tranh trên API một tiến trình chứng minh luồng đã cài đặt với SQLite; không dùng kết quả này để khẳng định hiệu năng trên nhiều máy chủ PostgreSQL.
+### 6.3. Hạn chế bằng chứng
 
-### 6.3. Kết quả quan sát
+Môi trường kiểm thử dùng proxy có chặn ảnh nền từ OpenStreetMap công cộng; không coi điều khiển map hoạt động là bằng chứng tiles hiển thị đầy đủ. Leaflet được đóng gói để không lỗi tải script CDN, nhưng vẫn cần kiểm chứng tiles từ mạng/điện thoại thật hoặc provider được cấp phép khác. Không tắt xác thực TLS để vượt lỗi môi trường.
 
-Giao diện web tải tám tài liệu mẫu và không ghi nhận pageerror khi mở trang trên Chromium. Bố cục được kiểm tra ở viewport desktop 1440×1050 và mobile web 390×844. Kịch bản hai tài khoản thực hiện tìm tài liệu, gửi yêu cầu, chấp nhận, gửi/nhận tin nhắn, xác nhận hai phía và đánh giá thành công.
+Native export đạt chỉ chứng minh mã có thể đóng gói, không khẳng định đã chạy đầy đủ trên iPhone/Android. Chưa có đo tải, khảo sát người dùng, kiểm tra accessibility toàn diện hoặc pentest độc lập. Các điểm chưa có kết quả không ghi là đã đạt.
 
-Việc kiểm tra viewport điện thoại chỉ xác nhận bố cục web trong kích thước đó, không phải bằng chứng ứng dụng đã chạy trên Android hoặc iOS. Chưa có kết quả kiểm thử native, thử tải, kiểm tra hỗ trợ người khuyết tật toàn diện hoặc khảo sát hài lòng người dùng.
+## CHƯƠNG 7. CHUYỂN ĐỔI, TRIỂN KHAI VÀ VẬN HÀNH
 
-### 6.4. Đánh giá và hạn chế
+### 7.1. Chuyển dữ liệu SQLite
 
-Ưu điểm là quy trình chạy cục bộ đơn giản, dữ liệu có ràng buộc, giao dịch có trạng thái rõ và có kiểm thử các hành vi dễ sai. Hệ thống chưa đáp ứng vận hành công khai ở quy mô lớn: giới hạn một API instance phù hợp SQLite; danh sách chưa có UI tải thêm; chat tối đa 500 tin; thiếu ảnh thật, email, xử lý tranh chấp và audit log.
+Dừng API cũ, sao lưu nguồn nhất quán, tạo PostgreSQL rỗng và chạy importer. Import giữ UUID/password hash, giao dịch và tin nhắn cũ; conversations được tạo theo tin/người hỏi. Database đích đã có users bị từ chối. Import trong transaction nên lỗi thì rollback, nguồn mở readOnly nên không bị xóa/sửa.
 
-Kiểm tra dependency có thể phát hiện cảnh báo từ công cụ build Expo/Metro. Các cảnh báo còn lại và cách xử lý được ghi trong KIEM_THU.md; không tuyên bố dependency không có lỗ hổng. Cần rà soát lại trước mỗi lần triển khai vì cơ sở dữ liệu advisory thay đổi theo thời gian.
+Điểm nguồn chưa tồn tại nên khởi tạo 0 và không thưởng hồi tố. Điều kiện giá/hình thức giao dịch cũ được suy ra từ tin đăng hiện có vì bản cũ chưa có snapshot; cần nêu giới hạn dữ liệu này. Giao dịch free đã accepted trước import không trừ điểm hồi tố. Hướng dẫn chi tiết trong README, gồm cách chọn import hoặc seed, không làm cả hai trên cùng database đã có người dùng.
 
-## CHƯƠNG 7. TRIỂN KHAI, VẬN HÀNH VÀ QUẢN LÝ MÃ NGUỒN
+### 7.2. Chạy và quản lý mã
 
-### 7.1. GitHub và tích hợp liên tục
+Node24, PostgreSQL17/Docker Desktop, Git và VS Code là công cụ chính. Compose tạo DB có persistent volume và healthcheck. DATABASE_URL chỉ ở server/.env. EXPO_PUBLIC_API_URL dùng localhost cho web, 10.0.2.2 cho Android Emulator, IPv4 LAN của máy cho điện thoại thật. Realtime dùng cùng cổng API4000; Metro8081 chỉ tải code.
 
-Repository sử dụng nhánh main cho bản bàn giao. Công việc tiếp theo nên tạo nhánh feature, commit có mô tả và mở pull request. Workflow chạy trên Node 24, cài npm ci, typecheck, API tests và web export; build web được tải lên artifact nếu workflow đạt. Kết quả CI trên GitHub phải xem thực tế ở tab Actions, không suy ra chỉ từ việc file workflow tồn tại.
+GitHub Actions cấp PostgreSQL service, cài npm ci, kiểm tra SDK/TypeScript/tests và export web/native. Giữ package-lock và cấu hình mẫu trong Git, loại trừ .env, DB/dump, node_modules và builds. Xem trạng thái Actions thật trước khi coi CI đạt.
 
-### 7.2. Cấu hình triển khai
+### 7.3. Vận hành
 
-Frontend web là tài nguyên tĩnh nhưng API phải chạy như dịch vụ riêng. Trước khi build production, đặt EXPO_PUBLIC_API_URL thành địa chỉ API HTTPS. API cần CORS_ORIGINS khớp domain frontend, cổng phù hợp và database trên volume bền vững. Không đặt database trong thư mục bị xóa khi redeploy, không chạy seed tài khoản demo trên máy chủ công khai.
+Sao lưu PostgreSQL bằng pg_dump/pgAdmin và thử restore vào database khác. Không dùng file SQLite cũ làm backup của dữ liệu mới. Không chạy compose down -v khi chỉ cập nhật mã. Khi production cần HTTPS, mật khẩu riêng, tài khoản DB có quyền phù hợp, log hạn chế dữ liệu cá nhân, theo dõi lỗi, chính sách lưu giữ và quy trình tranh chấp.
 
-### 7.3. Sao lưu và bảo vệ dữ liệu
-
-Phương án đơn giản cho máy cá nhân là dừng API rồi sao chép toàn bộ server/data. Nếu sao lưu khi đang chạy cần dùng API backup SQLite hoặc cơ chế nhất quán tương ứng; không chỉ copy file chính và bỏ qua WAL. Trước khi khôi phục phải dừng API, bảo quản bản hiện tại và kiểm tra dữ liệu sau khôi phục.
-
-Không commit .env, database, session token, thông tin GitHub hay dữ liệu cá nhân thật. Khi đưa vào sử dụng thực cần chính sách lưu giữ/xóa dữ liệu, backup tự động, logging hạn chế thông tin riêng tư và quy trình tiếp nhận khiếu nại. Đây là yêu cầu phát triển tiếp, chưa được hoàn thiện trong MVP.
+Dịch vụ tiles cần được phép sử dụng, đủ quota và đúng attribution. Nhiều Node instances cần adapter realtime. Các giả định một instance, khóa nghiệp vụ chung và chống gian lận cơ bản phải được xem lại dựa trên số liệu sử dụng thực.
 
 ## CHƯƠNG 8. KẾT LUẬN VÀ HƯỚNG PHÁT TRIỂN
 
-EduShare đã hiện thực bản MVP hỗ trợ hoạt động mua bán, trao đổi và tặng tài liệu học tập bản giấy. Kết quả bàn giao gồm mã nguồn đa nền tảng, API, schema database, dữ liệu demo, kiểm thử và tài liệu chạy bằng VS Code. Luồng giữ chỗ nguyên tử và hoàn thành hai phía thể hiện việc đưa quy tắc nghiệp vụ xuống tầng máy chủ thay vì chỉ xử lý giao diện.
+EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải nghiệm có liên hệ trước mua, động lực chia sẻ qua điểm, điểm nhận trên bản đồ và tín hiệu uy tín. PostgreSQL cung cấp mô hình quan hệ và transaction để liên kết ví, ledger, giữ chỗ và xác nhận. Các kiểm thử tập trung vào lỗi có hậu quả dữ liệu, không chỉ màn hình thành công.
 
-Trong giai đoạn tiếp theo, ưu tiên kiểm thử trên Android/iOS, xác minh và khôi phục tài khoản, tải ảnh thật, audit log và phân trang. Khi mở rộng vận hành, cần chuyển database theo yêu cầu tải thực tế, bổ sung WebSocket hoặc SSE và thông báo đẩy. Bán tài liệu số hay thanh toán trực tuyến chỉ nên thêm khi có thiết kế quyền phân phối, kiểm soát truy cập, webhook và hoàn tiền rõ ràng.
+Ưu tiên tiếp theo là nghiệm thu native, ảnh thật, email, chính sách tranh chấp và chống tích điểm giả. Khi có nhu cầu mở rộng, đo tải để tối ưu khóa, triển khai adapter realtime và push. AI sinh chỉ nên bổ sung với dữ liệu hướng dẫn có căn cứ, kiểm soát riêng tư và bộ đánh giá; không gọi FAQ hiện tại là mô hình AI đã huấn luyện.
 
 ## TÀI LIỆU THAM KHẢO
 
-1. React Native Documentation — https://reactnative.dev/docs/getting-started
-2. Expo Documentation — https://docs.expo.dev/
-3. TypeScript Handbook — https://www.typescriptlang.org/docs/handbook/intro.html
-4. Node.js SQLite API — https://nodejs.org/api/sqlite.html
-5. Node.js Crypto API — https://nodejs.org/api/crypto.html
-6. SQLite Transactions — https://www.sqlite.org/lang_transaction.html
-7. SQLite Foreign Key Support — https://www.sqlite.org/foreignkeys.html
-8. Express Documentation — https://expressjs.com/
-9. GitHub Actions Documentation — https://docs.github.com/en/actions
+1. Expo Documentation — https://docs.expo.dev/
+2. React Native — https://reactnative.dev/docs/getting-started
+3. PostgreSQL Documentation — https://www.postgresql.org/docs/17/
+4. node-postgres — https://node-postgres.com/
+5. Socket.IO — https://socket.io/docs/v4/
+6. Leaflet — https://leafletjs.com/reference.html
+7. OpenStreetMap Tile Usage Policy — https://operations.osmfoundation.org/policies/tiles/
+8. Node.js Crypto / SQLite — https://nodejs.org/api/crypto.html và https://nodejs.org/api/sqlite.html
+9. GitHub Actions — https://docs.github.com/en/actions
 10. OWASP Cheat Sheet Series — https://cheatsheetseries.owasp.org/
 
-Các đường dẫn là tài liệu kỹ thuật để đối chiếu và đọc thêm; báo cáo không trích dẫn số liệu nghiên cứu từ các nguồn này.
+Các đường dẫn là tài liệu kỹ thuật để đối chiếu, không phải nguồn số liệu khảo sát hoặc hiệu năng chưa đo.
 
-## PHỤ LỤC A. HƯỚNG DẪN CHẠY
+## PHỤ LỤC A. MINH CHỨNG GIAO DIỆN
 
-Xem README.md để có lệnh tương ứng PowerShell hoặc macOS/Linux. Thứ tự tối thiểu: clone → Node 24 → npm ci → tạo .env → npm run db:seed → npm run dev → localhost:8081. Tài khoản demo và mật khẩu chỉ dùng cho phát triển cục bộ.
+Ảnh dưới từ web chạy thật với dữ liệu demo, không phải ảnh ứng dụng native hoặc khảo sát người dùng thật.
 
-## PHỤ LỤC B. MINH CHỨNG GIAO DIỆN
+![Trang chủ desktop](images/v2/home-desktop.png)
 
-Ảnh được chụp từ bản web chạy cục bộ, không phải ảnh thiết kế hoặc ảnh ứng dụng native.
+![Hộp chat realtime trước khi mua](images/v2/chat-realtime.png)
 
-![Trang chủ desktop](images/trang-chu-desktop.png)
+![Ví điểm và sổ giao dịch](images/v2/wallet.png)
 
-![Trang chủ mobile web](images/trang-chu-mobile-web.png)
+![Hồ sơ công khai và uy tín](images/v2/public-profile.png)
 
-![Trao đổi giao nhận](images/tin-nhan.png)
+![Trợ lý FAQ và phiếu hỗ trợ](images/v2/support.png)
 
-![Giao dịch hoàn thành và đánh giá](images/giao-dich-hoan-thanh.png)
+![Bố cục mobile web](images/v2/home-mobile.png)
 
-## PHỤ LỤC C. DANH MỤC BÀN GIAO
+## PHỤ LỤC B. BÀN GIAO
 
-- Mã nguồn Expo/React Native và Express.
-- schema.sql, seed.js và hướng dẫn mở database.
-- Bộ kiểm thử API và workflow GitHub Actions.
-- Báo cáo Markdown và Word, sơ đồ dữ liệu, tài liệu API.
-- Kịch bản demo, đề cương slide, ảnh giao diện và lộ trình phát triển.
-
-Trước khi nộp: điền thông tin cá nhân, cập nhật ảnh chạy trên máy của mình nếu trường yêu cầu, rà soát mục lục và mẫu trình bày, bổ sung phần đóng góp cá nhân thực tế.
+Mã nguồn Expo/Express/Socket.IO; SQL/migrations/importer; compose và cấu hình mẫu; bộ test; báo cáo Word/Markdown; slide; API/ERD; kịch bản bảo vệ và lộ trình. Cần điền thông tin cá nhân, rà soát format trường, bổ sung kết quả native từ thiết bị thật trước khi nộp.
