@@ -1,0 +1,29 @@
+{
+  "name": "edushare",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "apps/mobile",
+    "server"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n API,EXPO \"npm run dev -w server\" \"npm run web -w apps/mobile\"",
+    "api": "npm run dev -w server",
+    "web": "npm run web -w apps/mobile",
+    "android": "npm run android -w apps/mobile",
+    "ios": "npm run ios -w apps/mobile",
+    "db:seed": "npm run seed -w server",
+    "test": "npm run test -w server",
+    "typecheck": "npm run typecheck -w apps/mobile",
+    "build:web": "npm run build -w apps/mobile",
+    "check": "npm run typecheck && npm test && npm run build:web",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "prettier": "^3.6.2"
+  }
+}

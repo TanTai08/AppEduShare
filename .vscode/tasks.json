@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "EduShare: Chạy API và Web",
+      "type": "shell",
+      "command": "npm run dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "EduShare: Tạo dữ liệu demo",
+      "type": "shell",
+      "command": "npm run db:seed",
+      "problemMatcher": []
+    },
+    {
+      "label": "EduShare: Kiểm tra toàn bộ",
+      "type": "shell",
+      "command": "npm run check",
+      "group": "test",
+      "problemMatcher": []
+    }
+  ]
+}
