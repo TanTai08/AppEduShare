@@ -37,6 +37,7 @@ import PhotoPicker from './components/PhotoPicker';
 import PhotoGallery from './components/PhotoGallery';
 import { PickedPhoto } from './components/photoTypes';
 import ConnectionPanel from './components/ConnectionPanel';
+import AiSuggestion, { categoryLabel } from './components/AiSuggestion';
 
 const C = {
   green: '#174D3C',
@@ -1231,6 +1232,8 @@ function ListingForm({
     [price, setPrice] = useState(String(item?.price || '')),
     [condition, setCondition] = useState(item?.condition || 'Như mới');
   const [pickupLabel, setPickupLabel] = useState(item?.pickup_label || '');
+  const [category, setCategory] = useState(item?.category || '');
+  const [classificationId, setClassificationId] = useState<string | undefined>();
   const [photos, setPhotos] = useState<(MediaImage & { previewUri?: string })[]>(
     item?.images || [],
   );
@@ -1345,6 +1348,14 @@ function ListingForm({
         onChange={setDescription}
         multiline
       />
+      <AiSuggestion
+        title={title}
+        description={description}
+        category={category}
+        disabled={busy}
+        onCategoryChange={setCategory}
+        onClassificationChange={setClassificationId}
+      />
       <Choices values={kinds} value={kind} onChange={(v) => setKind(v as Listing['kind'])} />
       {kind === 'sell' && <Field label="Giá bán (VNĐ)" value={price} onChange={setPrice} number />}
       <Field label="Trường học" value={school} onChange={setSchool} />
@@ -1381,6 +1392,8 @@ function ListingForm({
             title,
             description,
             subject,
+            category,
+            ...(classificationId ? { classification_id: classificationId } : {}),
             school,
             area,
             kind,
@@ -1435,6 +1448,7 @@ function Detail({
     <View style={{ gap: 16 }}>
       {!!item.images?.length && <PhotoGallery images={item.images} />}
       <Text style={s.title}>{item.title}</Text>
+      {!!item.category && <Text style={s.badge}>{categoryLabel(item.category)}</Text>}
       <Text style={s.badge}>
         {kinds[item.kind]} · {statuses[item.status]}
       </Text>

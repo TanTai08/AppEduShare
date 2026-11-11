@@ -5,7 +5,7 @@
 - Trường/Khoa: [Điền theo đơn vị đào tạo]
 - Sinh viên: [Họ tên] — Mã sinh viên: [Mã sinh viên] — Lớp: [Lớp]
 - Giảng viên hướng dẫn: [Họ tên] — Học phần: [Học phần]
-- Phiên bản: 2.0 — cập nhật ảnh tài liệu 11/11/2026
+- Phiên bản: 2.0 — cập nhật AI phân loại 11/11/2026
 - Mã nguồn: https://github.com/TanTai08/AppEduShare
 
 Thông tin cá nhân chưa được cung cấp nên để trống. Người nộp cần rà soát quy định trình bày và học thuật của trường, bổ sung phần công việc cá nhân thực tế và kết quả chạy trên thiết bị của mình.
@@ -15,6 +15,8 @@ Thông tin cá nhân chưa được cung cấp nên để trống. Người nộ
 EduShare 2 hỗ trợ sinh viên mua bán, trao đổi và nhận tài liệu bản giấy trong cùng trường hoặc khu vực. Từ bản MVP cục bộ, hệ thống được chuyển sang PostgreSQL và bổ sung chat realtime trước khi mua, ví điểm, ảnh tài liệu, điểm hẹn dạng văn bản, hồ sơ uy tín và hộp hỗ trợ. Giao diện sử dụng Expo SDK58/React Native/TypeScript, backend dùng Node.js/Express và Socket.IO.
 
 Trọng tâm kỹ thuật là bảo toàn trạng thái tài liệu, giao dịch và số dư khi nhiều người thao tác đồng thời. Giao dịch hoàn thành cần xác nhận hai phía; điểm được cập nhật cùng sổ ledger trong transaction; sự kiện realtime phát sau commit. Cuộc trò chuyện độc lập với đơn mua nên hai bên có thể hỏi tình trạng và thương lượng trước. Dữ liệu SQLite cũ có công cụ chuyển sang PostgreSQL chỉ đọc, không xóa nguồn.
+
+Bản cập nhật bổ sung mô hình học máy TF-IDF/Logistic Regression gợi ý nhóm tài liệu từ tên/mô tả. Mô hình huấn luyện trên480mẫu tổng hợp cho đồ án, chưa có đánh giá dữ liệu sinh viên thực.
 
 Kết quả gồm mã nguồn, schema/migration, dữ liệu mẫu, kiểm thử HTTP/socket/database/import, ảnh giao diện và tài liệu vận hành. Phạm vi chưa bao gồm xác thực thanh toán/giao nhận ngoài đời, vận hành nhiều Node instances, tải file số, AI sinh hoặc push khi app đóng. Kết quả bundling native không thay thế nghiệm thu trên Android/iPhone thật.
 
@@ -42,6 +44,7 @@ Hệ thống tập trung thông tin tài liệu, liên hệ trước mua và qu�
 
 - Giao diện dùng chung cho web, Android và iOS; bố cục tiếng Việt thích ứng màn hình.
 - Tìm kiếm, đăng tin, mua/đổi và nhận sách bằng điểm.
+- AI gợi ý8nhóm tài liệu, người đăng xác nhận hoặc chọn thủ công.
 - Chat riêng realtime trước và sau khi gửi yêu cầu mua.
 - Chọn ảnh, xem trước, đổi ảnh bìa và ghi điểm giao nhận công khai bằng văn bản.
 - Xem hồ sơ, sao, nhận xét từ các giao dịch hoàn thành.
@@ -88,6 +91,10 @@ Native dùng Expo ImagePicker, web dùng file input để chọn tối đa5 ản
 
 Ảnh lưu BYTEA trong PostgreSQL để triển khai và sao lưu cùng dữ liệu đồ án. Khi mở rộng cần đo tải và cân nhắc object storage/CDN. Ảnh nháp chỉ chủ đọc được; ảnh đã gắn tin công khai qua URL kể cả tin ẩn. UI bản đồ/WebView đã được gỡ do dịch vụ tiles công cộng chặn truy cập. Điểm giao nhận dùng tên nơi công cộng và thỏa thuận qua chat.
 
+### 2.5. Học máy phân loại văn bản
+
+Đầu vào gồm tên và mô tả, chuẩn hóa không dấu/chữ thường. So sánh TF-IDF từ1–2gram và ký tự3–5gram với Logistic Regression, C=1/4/12; chọn theo validation macro-F1. Vocabulary/IDF chỉ fit trên train. Bản chọn dùng ký tự3–5, C=4. Trọng số JSON được Node.js nạp để suy luận, không cần Python/server AI riêng lúc dùng app. Đây là mô hình học có giám sát đã được huấn luyện; hộp hỗ trợ FAQ vẫn là chức năng riêng không dùng LLM.
+
 ## CHƯƠNG 3. PHÂN TÍCH YÊU CẦU
 
 ### 3.1. Tác nhân
@@ -114,6 +121,7 @@ Native dùng Expo ImagePicker, web dùng file input để chọn tối đa5 ản
 | FR08 | Uy tín            | Sao/nhận xét theo giao dịch, ẩn dữ liệu riêng tư         |
 | FR09 | Hỗ trợ            | FAQ và phiếu riêng chủ phiếu/admin                       |
 | FR10 | Kiểm duyệt        | Báo cáo, khóa tin, hủy giao dịch liên quan và audit      |
+| FR12 | AI phân loại      | Gợi ý nhóm từ tên/mô tả, xác nhận/thủ công, lưu feedback |
 | FR11 | Chuyển đổi        | Import nguồn SQLite chỉ đọc, đích rỗng, rollback khi lỗi |
 
 ### 3.3. Quy tắc điểm đã chọn
@@ -140,7 +148,7 @@ flowchart LR
  E --> D
 ```
 
-Hệ thống có 15 bảng nghiệp vụ và schema_migrations. ERD chi tiết trong CO_SO_DU_LIEU.md. Conversations độc lập với transactions; messages tham chiếu conversation. Point_ledger giữ sự thay đổi, users.points giữ tổng hiện tại. Reviews gắn transaction và tác giả, không cho đánh giá tùy ý trên hồ sơ.
+Hệ thống có 16 bảng nghiệp vụ và schema_migrations. ERD chi tiết trong CO_SO_DU_LIEU.md. Conversations độc lập với transactions; messages tham chiếu conversation. Point_ledger giữ sự thay đổi, users.points giữ tổng hiện tại. Reviews gắn transaction và tác giả, không cho đánh giá tùy ý trên hồ sơ.
 
 ### 4.2. Trạng thái giao dịch
 
@@ -190,6 +198,12 @@ Ví cho biết số dư, quy tắc, từng delta, thời điểm và số dư sa
 
 Ảnh hiện lưu trong database; chưa dùng CDN/object storage cho quy mô lớn. Tìm kiếm ILIKE chưa chuẩn hóa không dấu; các danh sách ngoài chat có giới hạn số lượng. API hiện phù hợp một Node instance. Chưa có email xác minh/reset, push lúc app đóng, thanh toán/file số hoặc LLM.
 
+### 5.5. Tích hợp AI và phản hồi
+
+AiSuggestion gửi tên/mô tả khi người dùng nhấn nút; hiển thị top3 để xác nhận hoặc chọn thủ công. Không tự thay môn học hay chốt nhóm. Khi điểm thấp/chênh lệch nhỏ, thông báo chưa đủ chắc chắn. Nếu AI lỗi, vẫn đăng được theo lựa chọn thủ công. Phản hồi trễ sau khi đổi nội dung bị bỏ.
+
+Migration3 thêm listings.category và ai_classifications: user, hash đầu vào, model_version, dự đoán/top3/abstention và nhóm được xác nhận. Gắn feedback kiểm tra chủ sở hữu, chưa dùng và đầu vào trùng; cùng transaction với lưu tin. Bảng AI không lưu riêng bản nháp tên/mô tả. Feedback người dùng cần rà soát trước khi dùng làm nhãn huấn luyện, chưa tự retrain.
+
 ## CHƯƠNG 6. KIỂM THỬ VÀ ĐÁNH GIÁ
 
 ### 6.1. Phương pháp
@@ -198,7 +212,7 @@ Kiểm thử API chạy Express/Socket.IO thật trên cổng tạm, dùng Postg
 
 ### 6.2. Kết quả chức năng
 
-49 tests đạt (26 backend, 23 frontend) bao gồm xác thực, validation, search escaping, quyền tin, chat trước mua, idempotency/cursor, socket riêng tư và logout, hai xác nhận, thưởng đúng một lần, cạnh tranh giữ chỗ, thiếu điểm, refund một lần, không chi vượt ví, cap/cooldown, đổi sách, public reputation, kiểm duyệt, support và tổng ledger. Nhóm ảnh kiểm tra auth, file giả/hỏng/quá lớn, metadata, quyền đọc ảnh nháp, quyền gắn ảnh, thứ tự bìa, rollback, giữ ảnh với client cũ và xóa ảnh. Một số nhóm chứa nhiều assertion; không đồng nhất số nhóm với số request.
+56 tests đạt (33server, 23frontend) bao gồm xác thực, validation, search escaping, quyền tin, chat trước mua, idempotency/cursor, socket riêng tư và logout, hai xác nhận, thưởng đúng một lần, cạnh tranh giữ chỗ, thiếu điểm, refund một lần, không chi vượt ví, cap/cooldown, đổi sách, public reputation, kiểm duyệt, support và tổng ledger. Nhóm ảnh kiểm tra auth, file giả/hỏng/quá lớn, metadata, quyền đọc ảnh nháp, quyền gắn ảnh, thứ tự bìa, rollback, giữ ảnh với client cũ và xóa ảnh. Một số nhóm chứa nhiều assertion; không đồng nhất số nhóm với số request.
 
 Browser kiểm tra hai phiên sinh viên độc lập: chat trước mua và trả lời không cần refresh, gửi yêu cầu và cập nhật trạng thái realtime, xác nhận, đánh giá, lịch sử thưởng, nhận free và hủy hoàn điểm, FAQ, tạo phiếu. Bản cập nhật ảnh được kiểm tra browser: chọn2 ảnh → preview → xóa/chọn lại → đổi bìa → đăng → xem gallery → sửa bỏ ảnh; HTTP ảnh trả200 và không có lỗi JavaScript. Kiểm tra không còn iframe/ô tọa độ trong form. Chi tiết kết quả/chưa kiểm chứng nằm trong KIEM_THU.md.
 
@@ -207,6 +221,16 @@ Browser kiểm tra hai phiên sinh viên độc lập: chat trước mua và tr�
 Minh chứng ảnh là browser với ảnh fixture tạo cho kiểm thử, không phải ảnh sách thật của người dùng. Luồng thư viện ảnh native cần nghiệm thu trên thiết bị; export không kiểm tra được hộp thoại quyền của Android/iOS. Các ảnh giao diện v2 cũ là minh chứng cho các chức năng cộng đồng; ảnh form và chi tiết mới ở docs/images/photos.
 
 Native export đạt chỉ chứng minh mã có thể đóng gói, không khẳng định đã chạy đầy đủ trên iPhone/Android. Chưa có đo tải, khảo sát người dùng, kiểm tra accessibility toàn diện hoặc pentest độc lập. Các điểm chưa có kết quả không ghi là đã đạt.
+
+### 6.4. Đánh giá AI trên dữ liệu tổng hợp
+
+Bộ dữ liệu480mẫu từ160chủ đề do trợ lý biên soạn, 8nhóm cân bằng. Mỗi chủ đề có3biến thể cùng nằm trong một split: train336/validation72/test72. Kiểm tra không giao nhau theo nhóm chủ đề và văn bản chuẩn hóa, nhưng vẫn dùng cùng cách biên soạn/template nên chưa đại diện tin đăng thực tế.
+
+Chọn cấu hình bằng validation (macro-F1=0,9712), sau đó đánh giá test: top1Accuracy=0,8750 (63/72), macro-F1=0,8771. Ngưỡng điểm0,35 và chênh lệch0,10 chọn trên validation; test có32/72ca đủ ngưỡng (coverage44,44%), đúng32/32trong tập con nhỏ này. Không suy ra độ chính xác100%; 40ca chưa đủ chắc chắn được đề nghị chọn thủ công. Chín dự đoán top1sai thuộc Toán rời rạc, Kết cấu xây dựng, Hóa phân tích. Không sửa test sau khi xem lỗi.
+
+Trọng số export được đối chiếu Python/Node trên79fixture, sai lệch điểm dưới1e-8; train.py --verify huấn luyện lại để kiểm tra tái hiện. Cần thu thập nhãn thực được phép sử dụng, rà soát theo ngành và có test độc lập trước khi đánh giá vận hành. Quy trình, confusion matrix và toàn bộ kết quả trong AI_PHAN_LOAI.md và ai/reports/.
+
+![Ma trận nhầm lẫn AI trên tập test tổng hợp và so sánh validation](../ai/reports/evaluation.png)
 
 ## CHƯƠNG 7. CHUYỂN ĐỔI, TRIỂN KHAI VÀ VẬN HÀNH
 
@@ -232,7 +256,7 @@ Sao lưu database bao gồm ảnh BYTEA. Nhiều Node instances cần adapter re
 
 EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải nghiệm có liên hệ trước mua, động lực chia sẻ qua điểm, ảnh tài liệu, điểm nhận văn bản và tín hiệu uy tín. PostgreSQL cung cấp mô hình quan hệ và transaction để liên kết ví, ledger, giữ chỗ và xác nhận. Các kiểm thử tập trung vào lỗi có hậu quả dữ liệu, không chỉ màn hình thành công.
 
-Ưu tiên tiếp theo là nghiệm thu native, lưu ảnh trên object storage khi cần, email, chính sách tranh chấp và chống tích điểm giả. Khi có nhu cầu mở rộng, đo tải để tối ưu khóa, triển khai adapter realtime và push. AI sinh chỉ nên bổ sung với dữ liệu hướng dẫn có căn cứ, kiểm soát riêng tư và bộ đánh giá; không gọi FAQ hiện tại là mô hình AI đã huấn luyện.
+Ưu tiên tiếp theo là bổ sung dữ liệu AI thực được gán nhãn và đánh giá độc lập, nghiệm thu native, lưu ảnh trên object storage khi cần, email, chính sách tranh chấp và chống tích điểm giả. Khi có nhu cầu mở rộng, đo tải để tối ưu khóa, triển khai adapter realtime và push. AI sinh chỉ nên bổ sung với dữ liệu hướng dẫn có căn cứ, kiểm soát riêng tư và bộ đánh giá; không gọi FAQ hiện tại là mô hình AI đã huấn luyện.
 
 ## TÀI LIỆU THAM KHẢO
 
@@ -246,6 +270,7 @@ EduShare 2 mở rộng bản đồ án từ đăng tin/giao dịch thành trải
 8. Node.js Crypto / SQLite — https://nodejs.org/api/crypto.html và https://nodejs.org/api/sqlite.html
 9. GitHub Actions — https://docs.github.com/en/actions
 10. OWASP Cheat Sheet Series — https://cheatsheetseries.owasp.org/
+11. scikit-learn Logistic Regression / TF-IDF — https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression và https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction
 
 Các đường dẫn là tài liệu kỹ thuật để đối chiếu, không phải nguồn số liệu khảo sát hoặc hiệu năng chưa đo.
 
@@ -270,6 +295,8 @@ Các đường dẫn là tài liệu kỹ thuật để đối chiếu, không p
 ![Xem trước ảnh, xóa và chọn ảnh bìa](images/photos/form-preview.png)
 
 ![Gallery ảnh tài liệu trên mobile web](images/photos/detail-mobile.png)
+
+![AI gợi ý nhóm trên mobile web](images/ai/suggestion-mobile.png)
 
 ## PHỤ LỤC B. BÀN GIAO
 

@@ -123,7 +123,7 @@ test('PostgreSQL health, idempotent migration and initial zero wallet', async ()
   const a = await account();
   assert.equal(a.user.points, 0);
   assert.equal((await call('/wallet', 'GET', undefined, a.token)).data.balance, 0);
-  assert.equal((await one(db, 'SELECT count(*)::int n FROM schema_migrations')).n, 2);
+  assert.equal((await one(db, 'SELECT count(*)::int n FROM schema_migrations')).n, 3);
 });
 test('Auth: duplicate email, password hashing, revocation and private role', async () => {
   const a = await account();
@@ -772,4 +772,170 @@ test('Pending photo deletion and cleanup never remove attached listing photos', 
     true,
   );
   assert.equal((await fetch(base + fresh.url)).status, 404);
+});
+
+const classifierInput = {
+  title: 'Giáo trình Java và lập trình hướng đối tượng',
+  description: 'Class, kế thừa, interface và bài tập viết chương trình Java.',
+};
+const listingBody = (input = classifierInput) => ({
+  ...input,
+  subject: 'Lập trình',
+  school: 'VKU',
+  area: 'Đà Nẵng',
+  kind: 'sell',
+  price: 40000,
+  condition: 'Như mới',
+  pickup_label: 'Thư viện',
+});
+
+test('AI classification requires login, validates input and reports honest model provenance', async () => {
+  const info = await call('/ai/categories');
+  assert.equal(info.status, 200);
+  assert.equal(info.data.ready, true);
+  assert.equal(info.data.categories.length, 8);
+  assert.equal(info.data.dataset_source, 'authored_synthetic_demo');
+  assert.equal((await call('/ai/classify', 'POST', classifierInput)).status, 401);
+  const a = await account();
+  for (const body of [
+    { title: 'abc' },
+    { ...classifierInput, category: 'luat' },
+    { ...classifierInput, title: 'x'.repeat(151) },
+    { ...classifierInput, description: 'x'.repeat(3001) },
+  ])
+    assert.equal((await call('/ai/classify', 'POST', body, a.token)).status, 400);
+  const prediction = await call('/ai/classify', 'POST', classifierInput, a.token);
+  assert.equal(prediction.status, 200);
+  assert.equal(prediction.data.predicted_category, 'cntt');
+  assert.equal(prediction.data.abstained, false);
+  assert.equal(prediction.data.suggestions.length, 3);
+  const row = await one(db, 'SELECT * FROM ai_classifications WHERE id=$1', [
+    prediction.data.classification_id,
+  ]);
+  assert.equal(row.user_id, a.user.id);
+  assert.equal(row.listing_id, null);
+  assert.equal(row.input_hash.length, 64);
+  assert.equal(row.title, undefined); // Request log stores hash, not unpublished input text.
+});
+
+test('AI suggestion can be confirmed or corrected, and feedback commits with the listing', async () => {
+  const a = await account();
+  const suggestion = await call('/ai/classify', 'POST', classifierInput, a.token);
+  const saved = await call(
+    '/listings',
+    'POST',
+    {
+      ...listingBody(),
+      category: 'kinh_te',
+      classification_id: suggestion.data.classification_id,
+    },
+    a.token,
+  );
+  assert.equal(saved.status, 201, JSON.stringify(saved.data));
+  assert.equal(saved.data.category, 'kinh_te'); // Human decides; model never overwrites chosen category.
+  const feedback = await one(db, 'SELECT * FROM ai_classifications WHERE id=$1', [
+    suggestion.data.classification_id,
+  ]);
+  assert.equal(feedback.predicted_category, 'cntt');
+  assert.equal(feedback.confirmed_category, 'kinh_te');
+  assert.equal(feedback.listing_id, saved.data.id);
+  assert.equal((await call('/listings/' + saved.data.id)).data.category, 'kinh_te');
+  assert.equal(
+    (await call('/listings', 'POST', { ...listingBody(), category: 'imaginary' }, a.token)).status,
+    400,
+  );
+  const again = await call(
+    '/listings',
+    'POST',
+    {
+      ...listingBody(),
+      category: 'cntt',
+      classification_id: suggestion.data.classification_id,
+    },
+    a.token,
+  );
+  assert.equal(again.status, 409);
+  const count = await one(db, 'SELECT count(*)::int n FROM listings WHERE owner_id=$1', [
+    a.user.id,
+  ]);
+  assert.equal(count.n, 1); // Failed provenance binding rolled back the insert.
+});
+
+test('AI feedback rejects another owner or changed input and rolls back listing edits', async () => {
+  const a = await account(),
+    b = await account();
+  const suggestion = await call('/ai/classify', 'POST', classifierInput, a.token);
+  assert.equal(
+    (
+      await call(
+        '/listings',
+        'POST',
+        {
+          ...listingBody(),
+          category: 'cntt',
+          classification_id: suggestion.data.classification_id,
+        },
+        b.token,
+      )
+    ).status,
+    403,
+  );
+  const existing = await listing(a);
+  const edited = await call(
+    '/listings/' + existing.id,
+    'PATCH',
+    {
+      ...listingBody({ ...classifierInput, title: 'Giáo trình Marketing căn bản' }),
+      category: 'kinh_te',
+      classification_id: suggestion.data.classification_id,
+    },
+    a.token,
+  );
+  assert.equal(edited.status, 409);
+  const current = await call('/listings/' + existing.id);
+  assert.equal(current.data.title, existing.title);
+  assert.equal(current.data.category, '');
+  assert.equal(
+    (
+      await one(db, 'SELECT listing_id FROM ai_classifications WHERE id=$1', [
+        suggestion.data.classification_id,
+      ])
+    ).listing_id,
+    null,
+  );
+});
+
+test('Manual categories work without AI; legacy edits preserve the selected category', async () => {
+  const a = await account();
+  const saved = await call('/listings', 'POST', { ...listingBody(), category: 'cntt' }, a.token);
+  assert.equal(saved.status, 201);
+  assert.equal(
+    (await call('/listings/' + saved.data.id, 'PATCH', listingBody(), a.token)).data.category,
+    'cntt',
+  );
+  assert.equal(
+    (await call('/listings/' + saved.data.id, 'PATCH', { ...listingBody(), category: '' }, a.token))
+      .data.category,
+    '',
+  );
+  const unknown = await call(
+    '/ai/classify',
+    'POST',
+    { title: 'Sách còn mới', description: 'Mình bán lại, nhận tại trường' },
+    a.token,
+  );
+  assert.equal(unknown.data.abstained, true);
+  assert.equal(unknown.data.predicted_category, null);
+  const manual = await call(
+    '/listings',
+    'POST',
+    {
+      ...listingBody({ title: 'Sách còn mới', description: 'Mình bán lại, nhận tại trường' }),
+      category: 'xa_hoi',
+      classification_id: unknown.data.classification_id,
+    },
+    a.token,
+  );
+  assert.equal(manual.status, 201);
+  assert.equal(manual.data.category, 'xa_hoi');
 });

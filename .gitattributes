@@ -1,0 +1,3 @@
+ai/data/*.csv text eol=lf
+ai/artifacts/*.json text eol=lf
+ai/reports/*.json text eol=lf

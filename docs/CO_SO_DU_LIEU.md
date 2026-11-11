@@ -2,9 +2,9 @@
 
 ## Nguồn chuẩn
 
-`server/src/schema.sql` là schema PostgreSQL 17+; `src/migrate.js` áp dụng version1 và `server/migrations/002-listing-images.sql` (version2) trong bảng `schema_migrations`. Migration chạy trong transaction có advisory lock; không tự xóa bảng. Version này là khởi tạo **database PostgreSQL mới**, không phải lệnh thay đổi file SQLite.
+`server/src/schema.sql` là schema PostgreSQL 17+; `src/migrate.js` áp dụng version1 và `server/migrations/002-listing-images.sql` (version2), `003-document-classifier.sql` (version3) trong bảng `schema_migrations`. Migration chạy trong transaction có advisory lock; không tự xóa bảng. Version này là khởi tạo **database PostgreSQL mới**, không phải lệnh thay đổi file SQLite.
 
-Có **15 bảng nghiệp vụ** và bảng theo dõi migration:
+Có **16 bảng nghiệp vụ** và bảng theo dõi migration, tổng17bảng:
 
 | Bảng             | Nội dung và ràng buộc chính                                                             |
 | ---------------- | --------------------------------------------------------------------------------------- |
@@ -12,6 +12,7 @@ Có **15 bảng nghiệp vụ** và bảng theo dõi migration:
 | sessions         | SHA-256 token; user; thời hạn 7 ngày                                                    |
 | listings         | Chủ tin, nội dung, giá, hình thức, point_cost, trạng thái, điểm hẹn và tọa độ           |
 | listing_images   | UUID; owner; listing nullable; vị trí 0–4; JPEG BYTEA, thumbnail, kích thước; FK cascade |
+| ai_classifications | User, hash đầu vào, phiên bản model, gợi ý JSONB, nhóm dự đoán/xác nhận, listing nullable |
 | favorites        | Khóa ghép user/tin, không lưu trùng                                                     |
 | conversations    | Một cuộc trò chuyện theo tin và người hỏi; có thể tạo trước giao dịch                   |
 | messages         | UUID, seq identity, conversation, sender, client_id; unique(sender, client_id)          |
@@ -29,6 +30,8 @@ erDiagram
  USERS ||--o{ LISTINGS : owns
  USERS ||--o{ LISTING_IMAGES : uploads
  LISTINGS |o--o{ LISTING_IMAGES : illustrates
+ USERS ||--o{ AI_CLASSIFICATIONS : requests
+ LISTINGS |o--o{ AI_CLASSIFICATIONS : confirmed_for
  USERS ||--o{ SESSIONS : authenticates
  USERS ||--o{ FAVORITES : saves
  LISTINGS ||--o{ FAVORITES : receives
@@ -83,6 +86,14 @@ Hồ sơ public chỉ trả tên, trường/khu vực, bio, ngày tham gia, sao,
 Chủ tài khoản chỉ gắn ảnh của mình vào một tin; thay đổi tin và ảnh nằm trong cùng transaction/khóa nghiệp vụ. Ảnh đầu làm bìa, danh sách tối đa5 theo validation API; xóa khỏi danh sách khi sửa sẽ xóa dữ liệu ảnh. Ảnh chưa gắn tin chỉ chủ đọc được, giới hạn20/người; ảnh nháp quá24giờ được dọn vào lần upload tiếp theo. Ảnh đã gắn tin được đọc công khai qua URL kể cả khi tin ẩn.
 
 Chạy `npm run db:migrate` trên database hiện có để bổ sung bảng; không xóa hoặc seed lại dữ liệu. API cũng tự migrate lúc khởi động. Sao lưu pg_dump bao gồm cả BYTEA; chưa sử dụng object storage/CDN trong phạm vi đồ án.
+
+## AI phân loại (migration v3)
+
+Bổ sung `listings.category`, mặc định chuỗi rỗng cho tin cũ, CHECK8IDnhóm hoặc rỗng. Đây là nhóm rộng do người đăng xác nhận; subject vẫn lưu môn học nhập tay. Bảng ai_classifications lưu user_id, input_hash(SHA-256), model_version, predicted_category(NULL nếu abstain), top3suggestions(JSONB), abstained, confirmed_category và listing_id.
+
+Gợi ý chưa gắn tin không được đọc qua API công khai. Khi lưu, server kiểm tra chủ sở hữu, gợi ý chưa dùng và hash đầu vào trùng; thay đổi tin/nhóm/feedback atomic. Không gọi AI vẫn lưu tin được. Phản hồi người dùng chưa phải nhãn chuẩn, không tự động retrain. Dọn nháp quá30ngày theo người dùng vào lần yêu cầu AI tiếp theo. Model/vocabulary nằm trong ai/artifacts/model.json, không lưu trọng số lớn trong từng bản ghi database.
+
+Chạy db:migrate, không seed/import lại. Sau migration có17bảng gồm schema_migrations. Sơ đồ trước v3 chỉ có16bảng là phiên bản lịch sử. Hướng dẫn huấn luyện/metrics: AI_PHAN_LOAI.md.
 
 ## Import SQLite cũ
 

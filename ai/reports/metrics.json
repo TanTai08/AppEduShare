@@ -1,0 +1,339 @@
+{
+  "model_version": "edushare-tfidf-v1-52765cb202ca",
+  "provenance": "authored_synthetic_demo",
+  "limitation": "Synthetic topic-template dataset. Scores do not estimate real student listing accuracy.",
+  "dataset_sha256": "52765cb202ca2e7299bf2b58e41dcbba2f15c13caaebae63de08854989ac364a",
+  "random_seed": 2026,
+  "splits": {
+    "train": {
+      "rows": 336,
+      "groups": 112
+    },
+    "validation": {
+      "rows": 72,
+      "groups": 24
+    },
+    "test": {
+      "rows": 72,
+      "groups": 24
+    }
+  },
+  "leakage_checks": {
+    "disjoint_topic_groups": true,
+    "disjoint_normalized_documents": true
+  },
+  "candidates": [
+    {
+      "analyzer": "word",
+      "ngrams": [
+        1,
+        2
+      ],
+      "C": 1,
+      "validation_macro_f1": 0.9571428571428571
+    },
+    {
+      "analyzer": "word",
+      "ngrams": [
+        1,
+        2
+      ],
+      "C": 4,
+      "validation_macro_f1": 0.9571428571428571
+    },
+    {
+      "analyzer": "word",
+      "ngrams": [
+        1,
+        2
+      ],
+      "C": 12,
+      "validation_macro_f1": 0.9571428571428571
+    },
+    {
+      "analyzer": "char",
+      "ngrams": [
+        3,
+        5
+      ],
+      "C": 1,
+      "validation_macro_f1": 0.9571428571428571
+    },
+    {
+      "analyzer": "char",
+      "ngrams": [
+        3,
+        5
+      ],
+      "C": 4,
+      "validation_macro_f1": 0.9712171052631579
+    },
+    {
+      "analyzer": "char",
+      "ngrams": [
+        3,
+        5
+      ],
+      "C": 12,
+      "validation_macro_f1": 0.9712171052631579
+    }
+  ],
+  "selected": {
+    "analyzer": "char",
+    "ngrams": [
+      3,
+      5
+    ],
+    "C": 4,
+    "validation_macro_f1": 0.9712171052631579
+  },
+  "validation_policies": [
+    {
+      "threshold": 0.35,
+      "margin": 0.1,
+      "coverage": 0.7361111111111112,
+      "accepted_accuracy": 1.0
+    },
+    {
+      "threshold": 0.45,
+      "margin": 0.1,
+      "coverage": 0.4444444444444444,
+      "accepted_accuracy": 1.0
+    },
+    {
+      "threshold": 0.55,
+      "margin": 0.1,
+      "coverage": 0.3472222222222222,
+      "accepted_accuracy": 1.0
+    },
+    {
+      "threshold": 0.65,
+      "margin": 0.1,
+      "coverage": 0.18055555555555555,
+      "accepted_accuracy": 1.0
+    }
+  ],
+  "policy": {
+    "threshold": 0.35,
+    "margin": 0.1,
+    "coverage": 0.7361111111111112,
+    "accepted_accuracy": 1.0
+  },
+  "test": {
+    "accuracy": 0.875,
+    "macro_f1": 0.8770833333333333,
+    "coverage": 0.4444444444444444,
+    "accepted_accuracy": 1.0,
+    "classification_report": {
+      "cntt": {
+        "precision": 0.6,
+        "recall": 1.0,
+        "f1-score": 0.75,
+        "support": 9.0
+      },
+      "hoa_sinh": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1-score": 0.8,
+        "support": 9.0
+      },
+      "kinh_te": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "ky_thuat": {
+        "precision": 1.0,
+        "recall": 0.6666666666666666,
+        "f1-score": 0.8,
+        "support": 9.0
+      },
+      "luat": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "ngoai_ngu": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "toan": {
+        "precision": 0.6666666666666666,
+        "recall": 0.6666666666666666,
+        "f1-score": 0.6666666666666666,
+        "support": 9.0
+      },
+      "xa_hoi": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 9.0
+      },
+      "accuracy": 0.875,
+      "macro avg": {
+        "precision": 0.9083333333333333,
+        "recall": 0.875,
+        "f1-score": 0.8770833333333333,
+        "support": 72.0
+      },
+      "weighted avg": {
+        "precision": 0.9083333333333334,
+        "recall": 0.875,
+        "f1-score": 0.8770833333333333,
+        "support": 72.0
+      }
+    },
+    "labels": [
+      "cntt",
+      "hoa_sinh",
+      "kinh_te",
+      "ky_thuat",
+      "luat",
+      "ngoai_ngu",
+      "toan",
+      "xa_hoi"
+    ],
+    "confusion_matrix": [
+      [
+        9,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        6,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0
+      ],
+      [
+        0,
+        0,
+        9,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        6,
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        9,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        9,
+        0,
+        0
+      ],
+      [
+        3,
+        0,
+        0,
+        0,
+        0,
+        0,
+        6,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        9
+      ]
+    ],
+    "errors": [
+      {
+        "id": "toan-03-0",
+        "title": "Toán rời rạc",
+        "expected": "toan",
+        "predicted": "cntt"
+      },
+      {
+        "id": "toan-03-1",
+        "title": "Bài tập Toán rời rạc",
+        "expected": "toan",
+        "predicted": "cntt"
+      },
+      {
+        "id": "toan-03-2",
+        "title": "Đề cương ôn thi Toán rời rạc",
+        "expected": "toan",
+        "predicted": "cntt"
+      },
+      {
+        "id": "ky_thuat-16-0",
+        "title": "Kết cấu xây dựng",
+        "expected": "ky_thuat",
+        "predicted": "cntt"
+      },
+      {
+        "id": "ky_thuat-16-1",
+        "title": "Bài tập Kết cấu xây dựng",
+        "expected": "ky_thuat",
+        "predicted": "cntt"
+      },
+      {
+        "id": "ky_thuat-16-2",
+        "title": "Đề cương ôn thi Kết cấu xây dựng",
+        "expected": "ky_thuat",
+        "predicted": "cntt"
+      },
+      {
+        "id": "hoa_sinh-03-0",
+        "title": "Hóa phân tích",
+        "expected": "hoa_sinh",
+        "predicted": "toan"
+      },
+      {
+        "id": "hoa_sinh-03-1",
+        "title": "Bài tập Hóa phân tích",
+        "expected": "hoa_sinh",
+        "predicted": "toan"
+      },
+      {
+        "id": "hoa_sinh-03-2",
+        "title": "Đề cương ôn thi Hóa phân tích",
+        "expected": "hoa_sinh",
+        "predicted": "toan"
+      }
+    ]
+  }
+}

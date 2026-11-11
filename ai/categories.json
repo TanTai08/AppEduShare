@@ -1,0 +1,10 @@
+[
+  { "id": "cntt", "label": "Công nghệ thông tin" },
+  { "id": "toan", "label": "Toán học" },
+  { "id": "ngoai_ngu", "label": "Ngoại ngữ" },
+  { "id": "kinh_te", "label": "Kinh tế - Quản trị" },
+  { "id": "ky_thuat", "label": "Vật lý - Kỹ thuật" },
+  { "id": "hoa_sinh", "label": "Hóa học - Sinh học" },
+  { "id": "luat", "label": "Pháp luật" },
+  { "id": "xa_hoi", "label": "Xã hội - Nhân văn" }
+]

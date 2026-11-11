@@ -104,6 +104,7 @@ export interface Review {
   title: string;
 }
 export interface Listing {
+  category?: string;
   images?: MediaImage[];
   id: string;
   owner_id: string;

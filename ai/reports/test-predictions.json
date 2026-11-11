@@ -1,0 +1,506 @@
+[
+  {
+    "id": "cntt-03-0",
+    "title": "Phát triển web với React",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": true
+  },
+  {
+    "id": "cntt-03-1",
+    "title": "Bài tập Phát triển web với React",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": true
+  },
+  {
+    "id": "cntt-03-2",
+    "title": "Đề cương ôn thi Phát triển web với React",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-10-0",
+    "title": "Trí tuệ nhân tạo nhập môn",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-10-1",
+    "title": "Bài tập Trí tuệ nhân tạo nhập môn",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-10-2",
+    "title": "Đề cương ôn thi Trí tuệ nhân tạo nhập môn",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-16-0",
+    "title": "Điện toán đám mây",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-16-1",
+    "title": "Bài tập Điện toán đám mây",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "cntt-16-2",
+    "title": "Đề cương ôn thi Điện toán đám mây",
+    "expected": "cntt",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "toan-03-0",
+    "title": "Toán rời rạc",
+    "expected": "toan",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "toan-03-1",
+    "title": "Bài tập Toán rời rạc",
+    "expected": "toan",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "toan-03-2",
+    "title": "Đề cương ôn thi Toán rời rạc",
+    "expected": "toan",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "toan-10-0",
+    "title": "Lý thuyết số",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "toan-10-1",
+    "title": "Bài tập Lý thuyết số",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "toan-10-2",
+    "title": "Đề cương ôn thi Lý thuyết số",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "toan-16-0",
+    "title": "Quá trình ngẫu nhiên",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "toan-16-1",
+    "title": "Bài tập Quá trình ngẫu nhiên",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "toan-16-2",
+    "title": "Đề cương ôn thi Quá trình ngẫu nhiên",
+    "expected": "toan",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "ngoai_ngu-03-0",
+    "title": "Ngữ pháp tiếng Anh cơ bản",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-03-1",
+    "title": "Bài tập Ngữ pháp tiếng Anh cơ bản",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-03-2",
+    "title": "Đề cương ôn thi Ngữ pháp tiếng Anh cơ bản",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-10-0",
+    "title": "Từ vựng tiếng Anh học thuật",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-10-1",
+    "title": "Bài tập Từ vựng tiếng Anh học thuật",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-10-2",
+    "title": "Đề cương ôn thi Từ vựng tiếng Anh học thuật",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": true
+  },
+  {
+    "id": "ngoai_ngu-16-0",
+    "title": "Luyện thi VSTEP B2",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": false
+  },
+  {
+    "id": "ngoai_ngu-16-1",
+    "title": "Bài tập Luyện thi VSTEP B2",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": false
+  },
+  {
+    "id": "ngoai_ngu-16-2",
+    "title": "Đề cương ôn thi Luyện thi VSTEP B2",
+    "expected": "ngoai_ngu",
+    "predicted": "ngoai_ngu",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-03-0",
+    "title": "Marketing căn bản",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-03-1",
+    "title": "Bài tập Marketing căn bản",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-03-2",
+    "title": "Đề cương ôn thi Marketing căn bản",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-10-0",
+    "title": "Kế toán quản trị",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": true
+  },
+  {
+    "id": "kinh_te-10-1",
+    "title": "Bài tập Kế toán quản trị",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": true
+  },
+  {
+    "id": "kinh_te-10-2",
+    "title": "Đề cương ôn thi Kế toán quản trị",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": true
+  },
+  {
+    "id": "kinh_te-16-0",
+    "title": "Digital marketing",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-16-1",
+    "title": "Bài tập Digital marketing",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "kinh_te-16-2",
+    "title": "Đề cương ôn thi Digital marketing",
+    "expected": "kinh_te",
+    "predicted": "kinh_te",
+    "accepted": false
+  },
+  {
+    "id": "ky_thuat-03-0",
+    "title": "Điện tử tương tự",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": false
+  },
+  {
+    "id": "ky_thuat-03-1",
+    "title": "Bài tập Điện tử tương tự",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": true
+  },
+  {
+    "id": "ky_thuat-03-2",
+    "title": "Đề cương ôn thi Điện tử tương tự",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": true
+  },
+  {
+    "id": "ky_thuat-10-0",
+    "title": "Máy điện",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": true
+  },
+  {
+    "id": "ky_thuat-10-1",
+    "title": "Bài tập Máy điện",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": true
+  },
+  {
+    "id": "ky_thuat-10-2",
+    "title": "Đề cương ôn thi Máy điện",
+    "expected": "ky_thuat",
+    "predicted": "ky_thuat",
+    "accepted": true
+  },
+  {
+    "id": "ky_thuat-16-0",
+    "title": "Kết cấu xây dựng",
+    "expected": "ky_thuat",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "ky_thuat-16-1",
+    "title": "Bài tập Kết cấu xây dựng",
+    "expected": "ky_thuat",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "ky_thuat-16-2",
+    "title": "Đề cương ôn thi Kết cấu xây dựng",
+    "expected": "ky_thuat",
+    "predicted": "cntt",
+    "accepted": false
+  },
+  {
+    "id": "hoa_sinh-03-0",
+    "title": "Hóa phân tích",
+    "expected": "hoa_sinh",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "hoa_sinh-03-1",
+    "title": "Bài tập Hóa phân tích",
+    "expected": "hoa_sinh",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "hoa_sinh-03-2",
+    "title": "Đề cương ôn thi Hóa phân tích",
+    "expected": "hoa_sinh",
+    "predicted": "toan",
+    "accepted": false
+  },
+  {
+    "id": "hoa_sinh-10-0",
+    "title": "Sinh học phân tử",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "hoa_sinh-10-1",
+    "title": "Bài tập Sinh học phân tử",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "hoa_sinh-10-2",
+    "title": "Đề cương ôn thi Sinh học phân tử",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "hoa_sinh-16-0",
+    "title": "Sinh lý thực vật",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "hoa_sinh-16-1",
+    "title": "Bài tập Sinh lý thực vật",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "hoa_sinh-16-2",
+    "title": "Đề cương ôn thi Sinh lý thực vật",
+    "expected": "hoa_sinh",
+    "predicted": "hoa_sinh",
+    "accepted": true
+  },
+  {
+    "id": "luat-03-0",
+    "title": "Luật hiến pháp",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "luat-03-1",
+    "title": "Bài tập Luật hiến pháp",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "luat-03-2",
+    "title": "Đề cương ôn thi Luật hiến pháp",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "luat-10-0",
+    "title": "Luật hôn nhân gia đình",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": false
+  },
+  {
+    "id": "luat-10-1",
+    "title": "Bài tập Luật hôn nhân gia đình",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": false
+  },
+  {
+    "id": "luat-10-2",
+    "title": "Đề cương ôn thi Luật hôn nhân gia đình",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": false
+  },
+  {
+    "id": "luat-16-0",
+    "title": "Luật thuế",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "luat-16-1",
+    "title": "Bài tập Luật thuế",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "luat-16-2",
+    "title": "Đề cương ôn thi Luật thuế",
+    "expected": "luat",
+    "predicted": "luat",
+    "accepted": true
+  },
+  {
+    "id": "xa_hoi-03-0",
+    "title": "Tâm lý học đại cương",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": true
+  },
+  {
+    "id": "xa_hoi-03-1",
+    "title": "Bài tập Tâm lý học đại cương",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": true
+  },
+  {
+    "id": "xa_hoi-03-2",
+    "title": "Đề cương ôn thi Tâm lý học đại cương",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": true
+  },
+  {
+    "id": "xa_hoi-10-0",
+    "title": "Đạo đức học",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": true
+  },
+  {
+    "id": "xa_hoi-10-1",
+    "title": "Bài tập Đạo đức học",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": false
+  },
+  {
+    "id": "xa_hoi-10-2",
+    "title": "Đề cương ôn thi Đạo đức học",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": false
+  },
+  {
+    "id": "xa_hoi-16-0",
+    "title": "Địa lý nhân văn",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": false
+  },
+  {
+    "id": "xa_hoi-16-1",
+    "title": "Bài tập Địa lý nhân văn",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": false
+  },
+  {
+    "id": "xa_hoi-16-2",
+    "title": "Đề cương ôn thi Địa lý nhân văn",
+    "expected": "xa_hoi",
+    "predicted": "xa_hoi",
+    "accepted": false
+  }
+]

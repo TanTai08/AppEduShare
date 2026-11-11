@@ -7,3 +7,5 @@ data
 *.docx
 *.pptx
 docs/images
+ai/artifacts/
+ai/reports/

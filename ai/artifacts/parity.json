@@ -1,0 +1,1108 @@
+[
+  {
+    "title": "Phát triển web với React",
+    "description": "Xây dựng giao diện component, state, hooks và gọi REST API. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.3533578860902692,
+      "hoa_sinh": 0.06950366101581384,
+      "kinh_te": 0.06624933080232506,
+      "ky_thuat": 0.11266868318576198,
+      "luat": 0.07714777287842815,
+      "ngoai_ngu": 0.08887626382976951,
+      "toan": 0.07671589637896661,
+      "xa_hoi": 0.15548050581866574
+    }
+  },
+  {
+    "title": "Bài tập Phát triển web với React",
+    "description": "Tài liệu ôn học phần: Xây dựng giao diện component, state, hooks và gọi REST API. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.3715615361634224,
+      "hoa_sinh": 0.07063455044553692,
+      "kinh_te": 0.06482312896551087,
+      "ky_thuat": 0.11416999429179737,
+      "luat": 0.06653053124071484,
+      "ngoai_ngu": 0.08534839442273169,
+      "toan": 0.08460235178431215,
+      "xa_hoi": 0.1423295126859737
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Phát triển web với React",
+    "description": "Xây dựng giao diện component, state, hooks và gọi REST API. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.3448676761319166,
+      "hoa_sinh": 0.06840204019639143,
+      "kinh_te": 0.0713608886523746,
+      "ky_thuat": 0.11477925292369445,
+      "luat": 0.07822523790576388,
+      "ngoai_ngu": 0.0881356626884011,
+      "toan": 0.08917125873371975,
+      "xa_hoi": 0.14505798276773815
+    }
+  },
+  {
+    "title": "Trí tuệ nhân tạo nhập môn",
+    "description": "Thuật toán tìm kiếm, biểu diễn tri thức và hệ chuyên gia. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.25389156404161595,
+      "hoa_sinh": 0.09128893963375015,
+      "kinh_te": 0.13051149643087673,
+      "ky_thuat": 0.10880954888302448,
+      "luat": 0.14041766556465274,
+      "ngoai_ngu": 0.06639626722121851,
+      "toan": 0.07766384502701514,
+      "xa_hoi": 0.1310206731978463
+    }
+  },
+  {
+    "title": "Bài tập Trí tuệ nhân tạo nhập môn",
+    "description": "Tài liệu ôn học phần: Thuật toán tìm kiếm, biểu diễn tri thức và hệ chuyên gia. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.2974908951340403,
+      "hoa_sinh": 0.0871300316689567,
+      "kinh_te": 0.11939448402365889,
+      "ky_thuat": 0.10001725658044738,
+      "luat": 0.1074589990505982,
+      "ngoai_ngu": 0.07108769144732818,
+      "toan": 0.07679027114258444,
+      "xa_hoi": 0.14063037095238579
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Trí tuệ nhân tạo nhập môn",
+    "description": "Thuật toán tìm kiếm, biểu diễn tri thức và hệ chuyên gia. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.22388843500567165,
+      "hoa_sinh": 0.09227634995500461,
+      "kinh_te": 0.1470007175132257,
+      "ky_thuat": 0.11087157102392037,
+      "luat": 0.12513826196073893,
+      "ngoai_ngu": 0.0690440901077246,
+      "toan": 0.08364813182300707,
+      "xa_hoi": 0.14813244261070707
+    }
+  },
+  {
+    "title": "Điện toán đám mây",
+    "description": "Container Docker, triển khai ứng dụng, máy chủ và dịch vụ cloud. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.3123053534697373,
+      "hoa_sinh": 0.09647277648623337,
+      "kinh_te": 0.09125859558567143,
+      "ky_thuat": 0.18532390799184553,
+      "luat": 0.06492938118368999,
+      "ngoai_ngu": 0.06636061591924004,
+      "toan": 0.11610179839702393,
+      "xa_hoi": 0.06724757096655826
+    }
+  },
+  {
+    "title": "Bài tập Điện toán đám mây",
+    "description": "Tài liệu ôn học phần: Container Docker, triển khai ứng dụng, máy chủ và dịch vụ cloud. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.2914551742571311,
+      "hoa_sinh": 0.10188457220992825,
+      "kinh_te": 0.08206688188148409,
+      "ky_thuat": 0.22885703665503243,
+      "luat": 0.054826227062858945,
+      "ngoai_ngu": 0.05991320833184463,
+      "toan": 0.11663805993764932,
+      "xa_hoi": 0.06435883966407129
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Điện toán đám mây",
+    "description": "Container Docker, triển khai ứng dụng, máy chủ và dịch vụ cloud. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.26450473634978067,
+      "hoa_sinh": 0.10443078028151444,
+      "kinh_te": 0.08656472344741196,
+      "ky_thuat": 0.2290092564240927,
+      "luat": 0.061038166205651626,
+      "ngoai_ngu": 0.06486743559799706,
+      "toan": 0.1200331657546491,
+      "xa_hoi": 0.06955173593890245
+    }
+  },
+  {
+    "title": "Toán rời rạc",
+    "description": "Logic mệnh đề, tập hợp, quan hệ, tổ hợp và phép đếm. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.18834048524306254,
+      "hoa_sinh": 0.16186145572970273,
+      "kinh_te": 0.13165448456054998,
+      "ky_thuat": 0.13637248684748923,
+      "luat": 0.09125356078199783,
+      "ngoai_ngu": 0.07208938872639312,
+      "toan": 0.11588120390844107,
+      "xa_hoi": 0.10254693420236351
+    }
+  },
+  {
+    "title": "Bài tập Toán rời rạc",
+    "description": "Tài liệu ôn học phần: Logic mệnh đề, tập hợp, quan hệ, tổ hợp và phép đếm. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.19164870740410786,
+      "hoa_sinh": 0.1660668271806214,
+      "kinh_te": 0.13162898264352318,
+      "ky_thuat": 0.14099135887996644,
+      "luat": 0.07946321422829479,
+      "ngoai_ngu": 0.07174470351049729,
+      "toan": 0.12472290017946343,
+      "xa_hoi": 0.09373330597352554
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Toán rời rạc",
+    "description": "Logic mệnh đề, tập hợp, quan hệ, tổ hợp và phép đếm. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.1729338356480208,
+      "hoa_sinh": 0.14035056387510997,
+      "kinh_te": 0.13130491365426308,
+      "ky_thuat": 0.14201893109800887,
+      "luat": 0.08518262675452082,
+      "ngoai_ngu": 0.07501441124351149,
+      "toan": 0.14867954494231428,
+      "xa_hoi": 0.10451517278425065
+    }
+  },
+  {
+    "title": "Lý thuyết số",
+    "description": "Số nguyên tố, đồng dư, chia hết và phương trình Diophantine. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.1089291615212085,
+      "hoa_sinh": 0.0895022888376617,
+      "kinh_te": 0.0780685990639867,
+      "ky_thuat": 0.16422347814556826,
+      "luat": 0.0977216751872349,
+      "ngoai_ngu": 0.05880561235563383,
+      "toan": 0.3324801075605563,
+      "xa_hoi": 0.07026907732814995
+    }
+  },
+  {
+    "title": "Bài tập Lý thuyết số",
+    "description": "Tài liệu ôn học phần: Số nguyên tố, đồng dư, chia hết và phương trình Diophantine. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.10291511966473753,
+      "hoa_sinh": 0.08788408804294409,
+      "kinh_te": 0.06826916005636627,
+      "ky_thuat": 0.16057066790327668,
+      "luat": 0.11890926757427071,
+      "ngoai_ngu": 0.05220741356883398,
+      "toan": 0.33547832600591837,
+      "xa_hoi": 0.07376595718365242
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Lý thuyết số",
+    "description": "Số nguyên tố, đồng dư, chia hết và phương trình Diophantine. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.11507255174530162,
+      "hoa_sinh": 0.089678011246176,
+      "kinh_te": 0.07307847507055372,
+      "ky_thuat": 0.1636324703110823,
+      "luat": 0.1016434401490169,
+      "ngoai_ngu": 0.05581050214057204,
+      "toan": 0.32322554710124707,
+      "xa_hoi": 0.07785900223605033
+    }
+  },
+  {
+    "title": "Quá trình ngẫu nhiên",
+    "description": "Chuỗi Markov, quá trình Poisson và xác suất chuyển trạng thái. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.13862179690975296,
+      "hoa_sinh": 0.07548507993238258,
+      "kinh_te": 0.15827745652044836,
+      "ky_thuat": 0.10505498444655156,
+      "luat": 0.07596610580918048,
+      "ngoai_ngu": 0.04147617093273942,
+      "toan": 0.3383882490147138,
+      "xa_hoi": 0.06673015643423091
+    }
+  },
+  {
+    "title": "Bài tập Quá trình ngẫu nhiên",
+    "description": "Tài liệu ôn học phần: Chuỗi Markov, quá trình Poisson và xác suất chuyển trạng thái. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.14126706478131887,
+      "hoa_sinh": 0.07276325707903958,
+      "kinh_te": 0.17919136465222113,
+      "ky_thuat": 0.12620259874224474,
+      "luat": 0.06956163387827585,
+      "ngoai_ngu": 0.039823737107507313,
+      "toan": 0.30277503915556225,
+      "xa_hoi": 0.06841530460383037
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Quá trình ngẫu nhiên",
+    "description": "Chuỗi Markov, quá trình Poisson và xác suất chuyển trạng thái. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.14187551655311098,
+      "hoa_sinh": 0.07126864058901973,
+      "kinh_te": 0.18408986294686272,
+      "ky_thuat": 0.12426525007324701,
+      "luat": 0.06910934580824157,
+      "ngoai_ngu": 0.043477946429282106,
+      "toan": 0.293530864602671,
+      "xa_hoi": 0.07238257299756481
+    }
+  },
+  {
+    "title": "Ngữ pháp tiếng Anh cơ bản",
+    "description": "Các thì, câu bị động, mệnh đề quan hệ và bài tập grammar. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.051587563382313746,
+      "hoa_sinh": 0.04419356495520217,
+      "kinh_te": 0.033366074293168305,
+      "ky_thuat": 0.026806792716704594,
+      "luat": 0.03920099199452119,
+      "ngoai_ngu": 0.7242991959768262,
+      "toan": 0.030334932474800697,
+      "xa_hoi": 0.05021088420646315
+    }
+  },
+  {
+    "title": "Bài tập Ngữ pháp tiếng Anh cơ bản",
+    "description": "Tài liệu ôn học phần: Các thì, câu bị động, mệnh đề quan hệ và bài tập grammar. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.062038786986607405,
+      "hoa_sinh": 0.05413224184818679,
+      "kinh_te": 0.04346096387658805,
+      "ky_thuat": 0.03633017313316625,
+      "luat": 0.041212794757852195,
+      "ngoai_ngu": 0.6517435605379421,
+      "toan": 0.03726570618359118,
+      "xa_hoi": 0.07381577267606611
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Ngữ pháp tiếng Anh cơ bản",
+    "description": "Các thì, câu bị động, mệnh đề quan hệ và bài tập grammar. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.06090219072449026,
+      "hoa_sinh": 0.05563977370256869,
+      "kinh_te": 0.046352160063797804,
+      "ky_thuat": 0.038527230587221725,
+      "luat": 0.0421793830157073,
+      "ngoai_ngu": 0.6523522582709321,
+      "toan": 0.039753796540910685,
+      "xa_hoi": 0.06429320709437143
+    }
+  },
+  {
+    "title": "Từ vựng tiếng Anh học thuật",
+    "description": "Academic word list, collocation và bài tập sử dụng từ trong ngữ cảnh. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.039500415064653974,
+      "hoa_sinh": 0.041338097066592396,
+      "kinh_te": 0.032585660217281945,
+      "ky_thuat": 0.07430597411448056,
+      "luat": 0.04129860399885465,
+      "ngoai_ngu": 0.7019043297287448,
+      "toan": 0.022511276443274046,
+      "xa_hoi": 0.04655564336611768
+    }
+  },
+  {
+    "title": "Bài tập Từ vựng tiếng Anh học thuật",
+    "description": "Tài liệu ôn học phần: Academic word list, collocation và bài tập sử dụng từ trong ngữ cảnh. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.045735264103744226,
+      "hoa_sinh": 0.045537019109421865,
+      "kinh_te": 0.03220455947716936,
+      "ky_thuat": 0.0791487734197253,
+      "luat": 0.04605963715661556,
+      "ngoai_ngu": 0.6765200296152094,
+      "toan": 0.026001301576484226,
+      "xa_hoi": 0.04879341554163003
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Từ vựng tiếng Anh học thuật",
+    "description": "Academic word list, collocation và bài tập sử dụng từ trong ngữ cảnh. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.03978504213385625,
+      "hoa_sinh": 0.04474188127820513,
+      "kinh_te": 0.03635489673326531,
+      "ky_thuat": 0.0831332764061124,
+      "luat": 0.045258414493793024,
+      "ngoai_ngu": 0.6719293289284832,
+      "toan": 0.02645016643580553,
+      "xa_hoi": 0.05234699359047919
+    }
+  },
+  {
+    "title": "Luyện thi VSTEP B2",
+    "description": "Đề thi ngoại ngữ bốn kỹ năng, speaking và writing kèm hướng dẫn. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.12616999969674028,
+      "hoa_sinh": 0.08739868794406053,
+      "kinh_te": 0.08889636582669651,
+      "ky_thuat": 0.09327328883763905,
+      "luat": 0.11671187263333185,
+      "ngoai_ngu": 0.3100132795905137,
+      "toan": 0.0880560364688981,
+      "xa_hoi": 0.08948046900211995
+    }
+  },
+  {
+    "title": "Bài tập Luyện thi VSTEP B2",
+    "description": "Tài liệu ôn học phần: Đề thi ngoại ngữ bốn kỹ năng, speaking và writing kèm hướng dẫn. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.13354911080708382,
+      "hoa_sinh": 0.08396279480104755,
+      "kinh_te": 0.08480977456809487,
+      "ky_thuat": 0.09800173468276749,
+      "luat": 0.13861199349301415,
+      "ngoai_ngu": 0.2798681271868606,
+      "toan": 0.09141953215362732,
+      "xa_hoi": 0.08977693230750426
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Luyện thi VSTEP B2",
+    "description": "Đề thi ngoại ngữ bốn kỹ năng, speaking và writing kèm hướng dẫn. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.12769980462245858,
+      "hoa_sinh": 0.08598894040227062,
+      "kinh_te": 0.08200027112319569,
+      "ky_thuat": 0.09513217293113439,
+      "luat": 0.1322580765427881,
+      "ngoai_ngu": 0.29529369794085925,
+      "toan": 0.08792547274376684,
+      "xa_hoi": 0.09370156369352656
+    }
+  },
+  {
+    "title": "Marketing căn bản",
+    "description": "Phân khúc khách hàng, định vị thương hiệu và marketing mix 4P. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.15409921630292706,
+      "hoa_sinh": 0.13615019704720788,
+      "kinh_te": 0.18909944545650847,
+      "ky_thuat": 0.09995793441705568,
+      "luat": 0.09632806514500486,
+      "ngoai_ngu": 0.11919129915487812,
+      "toan": 0.14126588061005932,
+      "xa_hoi": 0.06390796186635864
+    }
+  },
+  {
+    "title": "Bài tập Marketing căn bản",
+    "description": "Tài liệu ôn học phần: Phân khúc khách hàng, định vị thương hiệu và marketing mix 4P. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.15876160434482664,
+      "hoa_sinh": 0.13747681984068497,
+      "kinh_te": 0.17323433277358286,
+      "ky_thuat": 0.11250136192770296,
+      "luat": 0.08301992069318372,
+      "ngoai_ngu": 0.11462162335569158,
+      "toan": 0.14391367313489423,
+      "xa_hoi": 0.07647066392943301
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Marketing căn bản",
+    "description": "Phân khúc khách hàng, định vị thương hiệu và marketing mix 4P. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.15925805164266763,
+      "hoa_sinh": 0.1286691353778163,
+      "kinh_te": 0.19001375591624015,
+      "ky_thuat": 0.10969602400687863,
+      "luat": 0.08806359944500015,
+      "ngoai_ngu": 0.10899908311185157,
+      "toan": 0.1422222185990643,
+      "xa_hoi": 0.07307813190048132
+    }
+  },
+  {
+    "title": "Kế toán quản trị",
+    "description": "Phân tích chi phí, dự toán ngân sách và quyết định quản lý nội bộ. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.13975418432680212,
+      "hoa_sinh": 0.05288227267591941,
+      "kinh_te": 0.5051170709063839,
+      "ky_thuat": 0.0334902133533211,
+      "luat": 0.08396109859696488,
+      "ngoai_ngu": 0.029009309889701913,
+      "toan": 0.1228702024788521,
+      "xa_hoi": 0.03291564777205475
+    }
+  },
+  {
+    "title": "Bài tập Kế toán quản trị",
+    "description": "Tài liệu ôn học phần: Phân tích chi phí, dự toán ngân sách và quyết định quản lý nội bộ. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.13249756179810102,
+      "hoa_sinh": 0.061584519037627815,
+      "kinh_te": 0.49181904623206507,
+      "ky_thuat": 0.04096128970409123,
+      "luat": 0.0801137739538538,
+      "ngoai_ngu": 0.02817967191202322,
+      "toan": 0.1268016435643333,
+      "xa_hoi": 0.03804249379790452
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Kế toán quản trị",
+    "description": "Phân tích chi phí, dự toán ngân sách và quyết định quản lý nội bộ. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.14329179436851894,
+      "hoa_sinh": 0.059755447056533774,
+      "kinh_te": 0.4776694924662439,
+      "ky_thuat": 0.04306858177851153,
+      "luat": 0.08092012881289268,
+      "ngoai_ngu": 0.0316418458769265,
+      "toan": 0.12476124527221427,
+      "xa_hoi": 0.03889146436815835
+    }
+  },
+  {
+    "title": "Digital marketing",
+    "description": "Chiến dịch quảng cáo, SEO, hành trình khách hàng và đo lường chuyển đổi. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.11226634107935042,
+      "hoa_sinh": 0.10994636420176356,
+      "kinh_te": 0.3259430032471006,
+      "ky_thuat": 0.12365683235813285,
+      "luat": 0.054103526291776,
+      "ngoai_ngu": 0.11044432350419169,
+      "toan": 0.10879621173421698,
+      "xa_hoi": 0.05484339758346784
+    }
+  },
+  {
+    "title": "Bài tập Digital marketing",
+    "description": "Tài liệu ôn học phần: Chiến dịch quảng cáo, SEO, hành trình khách hàng và đo lường chuyển đổi. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.11339968640309807,
+      "hoa_sinh": 0.124262425606044,
+      "kinh_te": 0.3060551459431339,
+      "ky_thuat": 0.1287350046156387,
+      "luat": 0.0488654263150162,
+      "ngoai_ngu": 0.10667622016240878,
+      "toan": 0.11275338586075911,
+      "xa_hoi": 0.05925270509390131
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Digital marketing",
+    "description": "Chiến dịch quảng cáo, SEO, hành trình khách hàng và đo lường chuyển đổi. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.11551080086808864,
+      "hoa_sinh": 0.12150284589515994,
+      "kinh_te": 0.2909887897132225,
+      "ky_thuat": 0.14258985032744984,
+      "luat": 0.05308301951357965,
+      "ngoai_ngu": 0.10731265464788312,
+      "toan": 0.11281054820794853,
+      "xa_hoi": 0.05620149082666783
+    }
+  },
+  {
+    "title": "Điện tử tương tự",
+    "description": "Diode, transistor, mạch khuếch đại và linh kiện bán dẫn. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.09886654572187105,
+      "hoa_sinh": 0.06560276741772315,
+      "kinh_te": 0.08752499933365158,
+      "ky_thuat": 0.3497800842917074,
+      "luat": 0.0997171068702605,
+      "ngoai_ngu": 0.10427693929662364,
+      "toan": 0.07416675948405578,
+      "xa_hoi": 0.12006479758410685
+    }
+  },
+  {
+    "title": "Bài tập Điện tử tương tự",
+    "description": "Tài liệu ôn học phần: Diode, transistor, mạch khuếch đại và linh kiện bán dẫn. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.10276934893069509,
+      "hoa_sinh": 0.0774268035633872,
+      "kinh_te": 0.0865835432659505,
+      "ky_thuat": 0.35465191001667584,
+      "luat": 0.07992956527738199,
+      "ngoai_ngu": 0.10133166970775813,
+      "toan": 0.086985031070421,
+      "xa_hoi": 0.11032212816773031
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Điện tử tương tự",
+    "description": "Diode, transistor, mạch khuếch đại và linh kiện bán dẫn. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.09703336668667531,
+      "hoa_sinh": 0.07313935549596988,
+      "kinh_te": 0.08205498327542882,
+      "ky_thuat": 0.3778804324860724,
+      "luat": 0.08274211722364531,
+      "ngoai_ngu": 0.09880573077195734,
+      "toan": 0.07770498846422605,
+      "xa_hoi": 0.11063902559602486
+    }
+  },
+  {
+    "title": "Máy điện",
+    "description": "Máy biến áp, động cơ đồng bộ và động cơ điện không đồng bộ. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.1452183790633284,
+      "hoa_sinh": 0.0681942278015107,
+      "kinh_te": 0.05559834905113973,
+      "ky_thuat": 0.500815527294119,
+      "luat": 0.05330188695698696,
+      "ngoai_ngu": 0.05179487938193711,
+      "toan": 0.07305039487703822,
+      "xa_hoi": 0.05202635557393975
+    }
+  },
+  {
+    "title": "Bài tập Máy điện",
+    "description": "Tài liệu ôn học phần: Máy biến áp, động cơ đồng bộ và động cơ điện không đồng bộ. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.15405978871920545,
+      "hoa_sinh": 0.07221734043067113,
+      "kinh_te": 0.052625940323498044,
+      "ky_thuat": 0.4976249250228583,
+      "luat": 0.04262723326990218,
+      "ngoai_ngu": 0.04780110964529809,
+      "toan": 0.07347524495929551,
+      "xa_hoi": 0.05956841762927129
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Máy điện",
+    "description": "Máy biến áp, động cơ đồng bộ và động cơ điện không đồng bộ. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.15584421158564235,
+      "hoa_sinh": 0.07317199100829612,
+      "kinh_te": 0.05460136406367642,
+      "ky_thuat": 0.4865885043725623,
+      "luat": 0.04762466376392174,
+      "ngoai_ngu": 0.05299053652554531,
+      "toan": 0.07157651340242513,
+      "xa_hoi": 0.05760221527793057
+    }
+  },
+  {
+    "title": "Kết cấu xây dựng",
+    "description": "Dầm, cột, tải trọng và tính toán công trình bê tông cốt thép. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.20679588769856388,
+      "hoa_sinh": 0.08132441331864912,
+      "kinh_te": 0.13210324671955653,
+      "ky_thuat": 0.17205167719839137,
+      "luat": 0.05139372132347088,
+      "ngoai_ngu": 0.06775968672567036,
+      "toan": 0.2042765447826529,
+      "xa_hoi": 0.08429482223304503
+    }
+  },
+  {
+    "title": "Bài tập Kết cấu xây dựng",
+    "description": "Tài liệu ôn học phần: Dầm, cột, tải trọng và tính toán công trình bê tông cốt thép. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.21286672444918098,
+      "hoa_sinh": 0.08504405954308206,
+      "kinh_te": 0.13208275987340204,
+      "ky_thuat": 0.2004323780879565,
+      "luat": 0.043596387503540154,
+      "ngoai_ngu": 0.06311156944190315,
+      "toan": 0.17647210987951545,
+      "xa_hoi": 0.0863940112214198
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Kết cấu xây dựng",
+    "description": "Dầm, cột, tải trọng và tính toán công trình bê tông cốt thép. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.2041084857754999,
+      "hoa_sinh": 0.08541442004701753,
+      "kinh_te": 0.13433618562995134,
+      "ky_thuat": 0.18901650140666684,
+      "luat": 0.052210470437242994,
+      "ngoai_ngu": 0.06761319353066009,
+      "toan": 0.1742053807424338,
+      "xa_hoi": 0.09309536243052759
+    }
+  },
+  {
+    "title": "Hóa phân tích",
+    "description": "Chuẩn độ, phân tích định lượng, định tính và xử lý mẫu thí nghiệm. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.147975796379161,
+      "hoa_sinh": 0.13547936923180212,
+      "kinh_te": 0.15301358007248242,
+      "ky_thuat": 0.08458508090926552,
+      "luat": 0.06263764124270277,
+      "ngoai_ngu": 0.044651984722505964,
+      "toan": 0.31395170069240436,
+      "xa_hoi": 0.057704846749675805
+    }
+  },
+  {
+    "title": "Bài tập Hóa phân tích",
+    "description": "Tài liệu ôn học phần: Chuẩn độ, phân tích định lượng, định tính và xử lý mẫu thí nghiệm. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.1382487966624478,
+      "hoa_sinh": 0.14383556795235,
+      "kinh_te": 0.16662251085930135,
+      "ky_thuat": 0.08738054310805331,
+      "luat": 0.04856293004086927,
+      "ngoai_ngu": 0.04515663043296663,
+      "toan": 0.3072711762795447,
+      "xa_hoi": 0.06292184466446692
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Hóa phân tích",
+    "description": "Chuẩn độ, phân tích định lượng, định tính và xử lý mẫu thí nghiệm. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.165627008509753,
+      "hoa_sinh": 0.14016953217640973,
+      "kinh_te": 0.13681794572777653,
+      "ky_thuat": 0.09059481100051539,
+      "luat": 0.05941976768210419,
+      "ngoai_ngu": 0.04743574233788427,
+      "toan": 0.290280408739386,
+      "xa_hoi": 0.06965478382617088
+    }
+  },
+  {
+    "title": "Sinh học phân tử",
+    "description": "Sao chép DNA, phiên mã RNA, dịch mã và kỹ thuật PCR. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.07932486507087129,
+      "hoa_sinh": 0.3743086746404747,
+      "kinh_te": 0.060375304987661825,
+      "ky_thuat": 0.20214129825424576,
+      "luat": 0.05499325194771107,
+      "ngoai_ngu": 0.06897400786498055,
+      "toan": 0.08463459457982962,
+      "xa_hoi": 0.07524800265422524
+    }
+  },
+  {
+    "title": "Bài tập Sinh học phân tử",
+    "description": "Tài liệu ôn học phần: Sao chép DNA, phiên mã RNA, dịch mã và kỹ thuật PCR. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.07271709821837267,
+      "hoa_sinh": 0.40891691430946453,
+      "kinh_te": 0.05596486798462785,
+      "ky_thuat": 0.19445903075889778,
+      "luat": 0.05064239757927971,
+      "ngoai_ngu": 0.06445425692699017,
+      "toan": 0.08030159346179058,
+      "xa_hoi": 0.07254384076057674
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Sinh học phân tử",
+    "description": "Sao chép DNA, phiên mã RNA, dịch mã và kỹ thuật PCR. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.06937574347745508,
+      "hoa_sinh": 0.42096247829534666,
+      "kinh_te": 0.05594869531004827,
+      "ky_thuat": 0.18772430304087107,
+      "luat": 0.05086352206163273,
+      "ngoai_ngu": 0.05980468749254162,
+      "toan": 0.0821023898712896,
+      "xa_hoi": 0.07321818045081481
+    }
+  },
+  {
+    "title": "Sinh lý thực vật",
+    "description": "Hô hấp, quang hợp, dinh dưỡng khoáng và hormone thực vật. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.06325489906759044,
+      "hoa_sinh": 0.4770910163065894,
+      "kinh_te": 0.06947962858526477,
+      "ky_thuat": 0.11097081229261876,
+      "luat": 0.05781360016610672,
+      "ngoai_ngu": 0.04483211868092798,
+      "toan": 0.12336765607787416,
+      "xa_hoi": 0.05319026882302787
+    }
+  },
+  {
+    "title": "Bài tập Sinh lý thực vật",
+    "description": "Tài liệu ôn học phần: Hô hấp, quang hợp, dinh dưỡng khoáng và hormone thực vật. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.068368411237466,
+      "hoa_sinh": 0.45551965244704734,
+      "kinh_te": 0.06271704223436611,
+      "ky_thuat": 0.13493279819115128,
+      "luat": 0.053225774666983215,
+      "ngoai_ngu": 0.043436905415002044,
+      "toan": 0.12216765576559696,
+      "xa_hoi": 0.05963176004238715
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Sinh lý thực vật",
+    "description": "Hô hấp, quang hợp, dinh dưỡng khoáng và hormone thực vật. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.06173169155334083,
+      "hoa_sinh": 0.5061679800682158,
+      "kinh_te": 0.06216766599241578,
+      "ky_thuat": 0.10729286618280094,
+      "luat": 0.056211580931131745,
+      "ngoai_ngu": 0.04129194195306039,
+      "toan": 0.11310265890859938,
+      "xa_hoi": 0.05203361441043512
+    }
+  },
+  {
+    "title": "Luật hiến pháp",
+    "description": "Hiến pháp, bộ máy nhà nước và quyền nghĩa vụ cơ bản của công dân. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.042182295820309336,
+      "hoa_sinh": 0.042707586414805924,
+      "kinh_te": 0.027207449808123053,
+      "ky_thuat": 0.043877555666220286,
+      "luat": 0.7292790491703389,
+      "ngoai_ngu": 0.039159121654570195,
+      "toan": 0.030166430779106232,
+      "xa_hoi": 0.04542051068652592
+    }
+  },
+  {
+    "title": "Bài tập Luật hiến pháp",
+    "description": "Tài liệu ôn học phần: Hiến pháp, bộ máy nhà nước và quyền nghĩa vụ cơ bản của công dân. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.042897653719281705,
+      "hoa_sinh": 0.040209061376721866,
+      "kinh_te": 0.03004252295105486,
+      "ky_thuat": 0.048278371878569044,
+      "luat": 0.7172242890684147,
+      "ngoai_ngu": 0.04023593702508276,
+      "toan": 0.03065391708697305,
+      "xa_hoi": 0.05045824689390176
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Luật hiến pháp",
+    "description": "Hiến pháp, bộ máy nhà nước và quyền nghĩa vụ cơ bản của công dân. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.04844359612834169,
+      "hoa_sinh": 0.05020610026060913,
+      "kinh_te": 0.031078782174280124,
+      "ky_thuat": 0.05409449279171097,
+      "luat": 0.6749510572681319,
+      "ngoai_ngu": 0.0478171161828753,
+      "toan": 0.03819945489046699,
+      "xa_hoi": 0.05520940030358403
+    }
+  },
+  {
+    "title": "Luật hôn nhân gia đình",
+    "description": "Kết hôn, ly hôn, quan hệ cha mẹ con và chế độ tài sản. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.19375996178222799,
+      "hoa_sinh": 0.13265980682003375,
+      "kinh_te": 0.144640510551878,
+      "ky_thuat": 0.09250904273636197,
+      "luat": 0.20065716951627,
+      "ngoai_ngu": 0.050790193527809537,
+      "toan": 0.08416268223840809,
+      "xa_hoi": 0.10082063282701079
+    }
+  },
+  {
+    "title": "Bài tập Luật hôn nhân gia đình",
+    "description": "Tài liệu ôn học phần: Kết hôn, ly hôn, quan hệ cha mẹ con và chế độ tài sản. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.16853222176974905,
+      "hoa_sinh": 0.12676864528560086,
+      "kinh_te": 0.13786529603017966,
+      "ky_thuat": 0.07723802287876501,
+      "luat": 0.27250490394966076,
+      "ngoai_ngu": 0.04642491723706467,
+      "toan": 0.079712005322612,
+      "xa_hoi": 0.09095398752636795
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Luật hôn nhân gia đình",
+    "description": "Kết hôn, ly hôn, quan hệ cha mẹ con và chế độ tài sản. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.1672934293115811,
+      "hoa_sinh": 0.12270693723549389,
+      "kinh_te": 0.1292011268040684,
+      "ky_thuat": 0.08113043702982396,
+      "luat": 0.25755175598835517,
+      "ngoai_ngu": 0.05283328869043715,
+      "toan": 0.08506588774763112,
+      "xa_hoi": 0.10421713719260921
+    }
+  },
+  {
+    "title": "Luật thuế",
+    "description": "Nghĩa vụ thuế, căn cứ tính thuế, kê khai và xử lý vi phạm pháp luật thuế. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.07606403573380915,
+      "hoa_sinh": 0.055800152325165976,
+      "kinh_te": 0.07422876175810918,
+      "ky_thuat": 0.07037400426857364,
+      "luat": 0.5407947445749879,
+      "ngoai_ngu": 0.046487573450914046,
+      "toan": 0.07757226323023117,
+      "xa_hoi": 0.05867846465820894
+    }
+  },
+  {
+    "title": "Bài tập Luật thuế",
+    "description": "Tài liệu ôn học phần: Nghĩa vụ thuế, căn cứ tính thuế, kê khai và xử lý vi phạm pháp luật thuế. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.07285070529428225,
+      "hoa_sinh": 0.052790358351457754,
+      "kinh_te": 0.05699410841557065,
+      "ky_thuat": 0.06664241728617759,
+      "luat": 0.5779078538538899,
+      "ngoai_ngu": 0.041383244795223297,
+      "toan": 0.07314489392666801,
+      "xa_hoi": 0.05828641807673071
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Luật thuế",
+    "description": "Nghĩa vụ thuế, căn cứ tính thuế, kê khai và xử lý vi phạm pháp luật thuế. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.07354998154600671,
+      "hoa_sinh": 0.0503035118721544,
+      "kinh_te": 0.058344480553299716,
+      "ky_thuat": 0.0646165237986297,
+      "luat": 0.582641333375285,
+      "ngoai_ngu": 0.0413405091955585,
+      "toan": 0.07184306148128577,
+      "xa_hoi": 0.05736059817778022
+    }
+  },
+  {
+    "title": "Tâm lý học đại cương",
+    "description": "Nhận thức, cảm xúc, trí nhớ, nhân cách và hành vi con người. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.037518889519323306,
+      "hoa_sinh": 0.06227176600377751,
+      "kinh_te": 0.052551307734091134,
+      "ky_thuat": 0.038446676460147364,
+      "luat": 0.03798839735403245,
+      "ngoai_ngu": 0.03358314649810578,
+      "toan": 0.05525648229946729,
+      "xa_hoi": 0.6823833341310551
+    }
+  },
+  {
+    "title": "Bài tập Tâm lý học đại cương",
+    "description": "Tài liệu ôn học phần: Nhận thức, cảm xúc, trí nhớ, nhân cách và hành vi con người. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.04042876474701885,
+      "hoa_sinh": 0.05727082138168519,
+      "kinh_te": 0.05708937513866589,
+      "ky_thuat": 0.03905736408710383,
+      "luat": 0.03414396703599097,
+      "ngoai_ngu": 0.034115465325304115,
+      "toan": 0.0531890573978885,
+      "xa_hoi": 0.6847051848863426
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Tâm lý học đại cương",
+    "description": "Nhận thức, cảm xúc, trí nhớ, nhân cách và hành vi con người. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.0422970704333318,
+      "hoa_sinh": 0.06708535288411994,
+      "kinh_te": 0.06245716826499176,
+      "ky_thuat": 0.046954285711870256,
+      "luat": 0.041009476536977,
+      "ngoai_ngu": 0.039755158132046574,
+      "toan": 0.06124284640070627,
+      "xa_hoi": 0.6391986416359563
+    }
+  },
+  {
+    "title": "Đạo đức học",
+    "description": "Giá trị đạo đức, trách nhiệm, lương tâm và chuẩn mực ứng xử. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.08755807762880184,
+      "hoa_sinh": 0.08134820994340337,
+      "kinh_te": 0.10362771690135676,
+      "ky_thuat": 0.09010219041419741,
+      "luat": 0.11042176382237917,
+      "ngoai_ngu": 0.05113848052996482,
+      "toan": 0.09917578086943356,
+      "xa_hoi": 0.3766277798904631
+    }
+  },
+  {
+    "title": "Bài tập Đạo đức học",
+    "description": "Tài liệu ôn học phần: Giá trị đạo đức, trách nhiệm, lương tâm và chuẩn mực ứng xử. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.0976452292066151,
+      "hoa_sinh": 0.1021270347271504,
+      "kinh_te": 0.10942145375411202,
+      "ky_thuat": 0.10422261635459498,
+      "luat": 0.09700634029760552,
+      "ngoai_ngu": 0.056113896743164714,
+      "toan": 0.11706416017869281,
+      "xa_hoi": 0.31639926873806457
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Đạo đức học",
+    "description": "Giá trị đạo đức, trách nhiệm, lương tâm và chuẩn mực ứng xử. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.09199571662000161,
+      "hoa_sinh": 0.09543907469166832,
+      "kinh_te": 0.10603897256261155,
+      "ky_thuat": 0.10737788218149544,
+      "luat": 0.10512681938377562,
+      "ngoai_ngu": 0.054347505862492825,
+      "toan": 0.1214534854357948,
+      "xa_hoi": 0.31822054326215987
+    }
+  },
+  {
+    "title": "Địa lý nhân văn",
+    "description": "Dân cư, đô thị hóa, di cư và quan hệ con người với không gian. Sách giấy đã dùng, còn đọc tốt, hẹn nhận tại thư viện.",
+    "scores": {
+      "cntt": 0.15854123220801095,
+      "hoa_sinh": 0.13345100032417487,
+      "kinh_te": 0.11969206213141675,
+      "ky_thuat": 0.06203087447596028,
+      "luat": 0.1557060013004753,
+      "ngoai_ngu": 0.058385209179166134,
+      "toan": 0.11630731985926787,
+      "xa_hoi": 0.19588630052152783
+    }
+  },
+  {
+    "title": "Bài tập Địa lý nhân văn",
+    "description": "Tài liệu ôn học phần: Dân cư, đô thị hóa, di cư và quan hệ con người với không gian. Có ghi chú bằng bút, giao tại cổng trường.",
+    "scores": {
+      "cntt": 0.16468454759263257,
+      "hoa_sinh": 0.14421159239060743,
+      "kinh_te": 0.11603896138166775,
+      "ky_thuat": 0.07083688874287442,
+      "luat": 0.1307908538759258,
+      "ngoai_ngu": 0.0597990222109016,
+      "toan": 0.1244624742214271,
+      "xa_hoi": 0.18917565958396335
+    }
+  },
+  {
+    "title": "Đề cương ôn thi Địa lý nhân văn",
+    "description": "Dân cư, đô thị hóa, di cư và quan hệ con người với không gian. Bản in dùng để ôn cuối kỳ, muốn bán hoặc trao đổi với bạn cùng trường.",
+    "scores": {
+      "cntt": 0.1640781092228054,
+      "hoa_sinh": 0.14261936951459428,
+      "kinh_te": 0.11246895174830704,
+      "ky_thuat": 0.0757763082687983,
+      "luat": 0.13412990550800666,
+      "ngoai_ngu": 0.06192882986191579,
+      "toan": 0.12428615289385704,
+      "xa_hoi": 0.18471237298171544
+    }
+  },
+  {
+    "title": "Giáo trình Java và lập trình hướng đối tượng",
+    "description": "Class, interface và bài tập chương trình.",
+    "scores": {
+      "cntt": 0.7204831210891738,
+      "hoa_sinh": 0.028245043334701188,
+      "kinh_te": 0.03974379331253353,
+      "ky_thuat": 0.03647195210781997,
+      "luat": 0.029593898508569517,
+      "ngoai_ngu": 0.03918397435924761,
+      "toan": 0.06598961205805927,
+      "xa_hoi": 0.04028860522989512
+    }
+  },
+  {
+    "title": "Giai tich mot bien",
+    "description": "Dao ham, gioi han va tich phan",
+    "scores": {
+      "cntt": 0.02209683864077011,
+      "hoa_sinh": 0.013044420607953503,
+      "kinh_te": 0.013883901619925754,
+      "ky_thuat": 0.014805980131041221,
+      "luat": 0.013388298067003639,
+      "ngoai_ngu": 0.017899994041967453,
+      "toan": 0.8838366454524766,
+      "xa_hoi": 0.021043921438861506
+    }
+  },
+  {
+    "title": "IELTS Writing",
+    "description": "Luyện viết bài luận tiếng Anh",
+    "scores": {
+      "cntt": 0.04012005391114609,
+      "hoa_sinh": 0.022792108286618262,
+      "kinh_te": 0.025627306189997923,
+      "ky_thuat": 0.030609272193241884,
+      "luat": 0.032721317139175525,
+      "ngoai_ngu": 0.8001084819122576,
+      "toan": 0.022901187998711207,
+      "xa_hoi": 0.025120272368851608
+    }
+  },
+  {
+    "title": "Sách còn mới",
+    "description": "Mình bán lại, nhận tại trường",
+    "scores": {
+      "cntt": 0.1923417157632041,
+      "hoa_sinh": 0.13820027013815378,
+      "kinh_te": 0.18685128917484764,
+      "ky_thuat": 0.08476607056678495,
+      "luat": 0.08263741604325033,
+      "ngoai_ngu": 0.0972184664881682,
+      "toan": 0.10370079834902272,
+      "xa_hoi": 0.1142839734765683
+    }
+  },
+  {
+    "title": "zxqv zzzz qqqq",
+    "description": "xyzxyz",
+    "scores": {
+      "cntt": 0.2012930747768322,
+      "hoa_sinh": 0.11443968682028367,
+      "kinh_te": 0.10286435294006945,
+      "ky_thuat": 0.12598089505345642,
+      "luat": 0.10597577064980825,
+      "ngoai_ngu": 0.12436176899330041,
+      "toan": 0.11260253372582477,
+      "xa_hoi": 0.1124819170404249
+    }
+  },
+  {
+    "title": "ＳＱＬ é ĐẠI SỐ",
+    "description": "Unicode parity fixture",
+    "scores": {
+      "cntt": 0.11627035922285021,
+      "hoa_sinh": 0.05349069350380469,
+      "kinh_te": 0.052793329329457114,
+      "ky_thuat": 0.0649327164471464,
+      "luat": 0.06882576272802238,
+      "ngoai_ngu": 0.06043408947728897,
+      "toan": 0.5158670845205017,
+      "xa_hoi": 0.06738596477092852
+    }
+  },
+  {
+    "title": "Nồi cơm điện",
+    "description": "Đồ dùng nấu ăn trong ký túc xá",
+    "scores": {
+      "cntt": 0.14386809641537648,
+      "hoa_sinh": 0.06520017205809919,
+      "kinh_te": 0.0739974907179537,
+      "ky_thuat": 0.30599267498854926,
+      "luat": 0.07027166988612717,
+      "ngoai_ngu": 0.10607051094083701,
+      "toan": 0.11636244868034352,
+      "xa_hoi": 0.11823693631271362
+    }
+  }
+]

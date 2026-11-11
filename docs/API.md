@@ -4,6 +4,8 @@ Base URL: `http://localhost:4000/api`. JSON UTF-8. Endpoint riêng tư dùng `Au
 
 | Method    | Endpoint                      | Quyền / mục đích                                       |
 | --------- | ----------------------------- | ------------------------------------------------------ |
+| GET       | /ai/categories                | Public, danh mục8nhóm và trạng thái model              |
+| POST      | /ai/classify                  | Đăng nhập, gợi ý nhóm từ tên/mô tả; 10lần/phút/IP        |
 | GET       | /health                       | Public, xác nhận engine PostgreSQL                     |
 | POST      | /auth/register, /auth/login   | Public, tạo phiên                                      |
 | POST      | /auth/logout                  | Thu hồi phiên và socket của phiên                      |
@@ -54,7 +56,8 @@ Listing:
   "price": 50000,
   "condition": "Như mới",
   "pickup_label": "Thư viện trường",
-  "image_ids": []
+  "image_ids": [],
+  "category": "cntt"
 }
 ```
 
@@ -76,6 +79,16 @@ Gửi lại cùng sender/client_id và cùng nội dung trả bản đã lưu; �
 Tạo transaction: `{listing_id,note,offered_listing_id?}`; offered bắt buộc với exchange. Action `{action:"accept"|"cancel"|"confirm"}`. Accept free cần đủ điểm; mọi thất bại rollback giữ chỗ và ví. Đánh giá `{rating:1..5,comment}`.
 
 FAQ `{message}` trả `{answer,suggestions,mode:"faq"}`. Phiếu `{subject,body}`. Phản hồi phiếu `{body}`. Chưa có API LLM hoặc cam kết phản hồi tức thời từ admin.
+
+## AI gợi ý nhóm tài liệu
+
+GET `/ai/categories` trả `{ready,categories:[{id,label}],model_version,algorithm,dataset_source}`. Source hiện là authored_synthetic_demo. Đây là model TF-IDF/Logistic Regression được huấn luyện trên dữ liệu tổng hợp, không phải LLM hoặc chatbot.
+
+POST `/ai/classify` cần token, body `{title,description}`: title3–150 ký tự, description0–3000, tổng ít nhất10; không nhận trường thừa. Giới hạn10lần/phút/IP. Trả `{classification_id,model_version,dataset_source,predicted_category,abstained,suggestions:[{category,label,score}]}`. Top3 theo điểm giảm dần; score không phải độ chính xác đã hiệu chuẩn. predicted_category=NULL khi điểm thấp/chênh lệch nhỏ; người dùng vẫn có thể chọn nhóm thủ công. Model không sẵn sàng trả503, không chặn API đăng tin.
+
+POST/PATCH listing thêm `category` là một trong cntt/toan/ngoai_ngu/kinh_te/ky_thuat/hoa_sinh/luat/xa_hoi hoặc chuỗi rỗng. Không bắt buộc gọi AI trước. Tạo tin không có category mặc định rỗng; client cũ sửa không gửi category thì giữ nhóm hiện có.
+
+Có thể gửi `classification_id` để lưu phản hồi cùng listing trong transaction. Chỉ gắn ID do chính người dùng yêu cầu, chưa dùng, đầu vào tên/mô tả không đổi (so SHA-256); khác chủ403, đã dùng/đầu vào đổi409. Nhóm xác nhận do người đăng chọn, không bắt buộc trùng dự đoán. API không tự gắn nhãn dự đoán vào tin. Bảng AI lưu hash đầu vào, không lưu bản nháp tên/mô tả; không có API public đọc phản hồi. Nháp chưa gắn tin quá30ngày dọn khi người đó yêu cầu AI tiếp theo. Chi tiết nguồn/metrics/huấn luyện trong AI_PHAN_LOAI.md.
 
 ## Tải và gắn ảnh
 

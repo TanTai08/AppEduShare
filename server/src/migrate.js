@@ -17,13 +17,19 @@ export async function migrate(pool) {
       );
       await db.query('INSERT INTO schema_migrations(version) VALUES(2)');
     }
+    if (!(await db.query('SELECT 1 FROM schema_migrations WHERE version=3')).rowCount) {
+      await db.query(
+        readFileSync(new URL('../migrations/003-document-classifier.sql', import.meta.url), 'utf8'),
+      );
+      await db.query('INSERT INTO schema_migrations(version) VALUES(3)');
+    }
   });
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const db = openDb();
   try {
     await migrate(db);
-    console.log('PostgreSQL migrations hoàn tất (v1 + v2 ảnh tài liệu).');
+    console.log('PostgreSQL migrations hoàn tất (v1 + v2 ảnh + v3 phân loại AI).');
   } finally {
     await db.end();
   }

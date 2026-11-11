@@ -1,5 +1,15 @@
 # Biên bản kiểm thử EduShare 2
 
+## AI phân loại tài liệu — 11/11/2026
+
+- **56 tests đạt:33server +23frontend**, gồm7test mới:3test inference/parity và4test API/quyền/feedback/rollback/category thủ công/client cũ. Không gộp72mẫu đánh giá ML vào số unit/integration tests.
+- Mô hình huấn luyện thật bằng scikit-learn trên480mẫu tổng hợp, chọn cấu hình theo validation, test top1Accuracy87,5%, macro-F1=0,8771. Chi tiết và giới hạn trong AI_PHAN_LOAI.md; train.py --verify tái hiện trọng số đã lưu.
+- Browser thật: gợi ý từ API → chưa tự áp dụng → người dùng xác nhận → lưu/hiển thị nhóm; môn học giữ nguyên; ca mơ hồ cho chọn thủ công. Phản hồi API trễ sau khi đổi nội dung bị bỏ. Giả lập API503 vẫn chọn nhóm và đăng được. Không có lỗi JavaScript.
+- Screenshot web: docs/images/ai/suggestion-desktop.png và suggestion-mobile.png; không phải nghiệm thu native.
+- Migration3 thêm category/ai_classifications, chạy lặp không lỗi. Kiểm tra client cũ giữ nhóm khi sửa, từ chối gợi ý của người khác/đầu vào đã đổi/ID đã dùng; rollback không tạo tin mồ côi. Feedback lưu hash, không ghi bản nháp tên/mô tả vào bảng AI.
+- Các biên bản bên dưới là lịch sử trước AI; số test và số bảng trong đó không mô tả bản mới nhất.
+
+
 ## Cập nhật ảnh tài liệu và bỏ bản đồ — 11/11/2026
 
 - **49 tests đạt: 26 backend PostgreSQL + 23 frontend.** TypeScript, web export, SDK dependency check và iOS/Android Hermes export đạt.

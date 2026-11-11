@@ -23,12 +23,21 @@ import {
 } from './domain.js';
 import { supportAnswer } from './support.js';
 import { prepareImage, storeImage, bindImages, MAX_BASE64_LENGTH } from './images.js';
+import {
+  CATEGORY_IDS,
+  classifierInfo,
+  classifyDocument,
+  inputHash,
+  bindClassification,
+} from './classifier.js';
 const text = (min = 1, max = 200) => z.string().trim().min(min).max(max);
 const listingSchema = z
   .object({
     title: text(3, 150),
     description: text(10, 3000),
     subject: text(2, 100),
+    category: z.enum(['', ...CATEGORY_IDS]).optional(),
+    classification_id: z.uuid().optional(),
     school: text(2, 150),
     area: text(2, 100),
     kind: z.enum(['sell', 'exchange', 'free']),
@@ -113,6 +122,36 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
       fail(403, 'Bạn không thuộc giao dịch này.');
     return t;
   };
+  app.get('/api/ai/categories', (req, res) => res.json(classifierInfo()));
+  app.post('/api/ai/classify', auth, limiter(10), async (req, res) => {
+    const b = z
+      .object({ title: text(3, 150), description: text(0, 3000).default('') })
+      .strict()
+      .parse(req.body);
+    if ((b.title + b.description).length < 10)
+      fail(400, 'Nhập tên và mô tả rõ hơn (tổng ít nhất 10 ký tự) để AI gợi ý.');
+    const result = classifyDocument(b.title, b.description);
+    const id = randomUUID();
+    await write(async (db) => {
+      await db.query(
+        "DELETE FROM ai_classifications WHERE user_id=$1 AND listing_id IS NULL AND created_at<now()-interval '30 days'",
+        [req.user.id],
+      );
+      await db.query(
+        'INSERT INTO ai_classifications(id,user_id,input_hash,model_version,predicted_category,suggestions,abstained) VALUES($1,$2,$3,$4,$5,$6,$7)',
+        [
+          id,
+          req.user.id,
+          inputHash(b.title, b.description),
+          result.model_version,
+          result.predicted_category,
+          JSON.stringify(result.suggestions),
+          result.abstained,
+        ],
+      );
+    });
+    res.json({ ...result, classification_id: id });
+  });
   app.post(
     '/api/uploads/images',
     auth,
@@ -295,7 +334,7 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
       await businessLock(db);
       const id = randomUUID();
       await db.query(
-        'INSERT INTO listings(id,owner_id,title,description,subject,school,area,kind,price,point_cost,condition,pickup_label,latitude,longitude) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)',
+        'INSERT INTO listings(id,owner_id,title,description,subject,school,area,kind,price,point_cost,condition,pickup_label,latitude,longitude,category) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)',
         [
           id,
           req.user.id,
@@ -311,9 +350,11 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
           b.pickup_label,
           b.latitude,
           b.longitude,
+          b.category || '',
         ],
       );
       await bindImages(db, req.user.id, id, b.image_ids);
+      await bindClassification(db, req.user.id, id, b, b.category || '');
       return one(db, `${LISTING_SELECT} WHERE l.id=$1`, [id]);
     });
     res.status(201).json(result);
@@ -328,7 +369,7 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
       if (!['active', 'hidden'].includes(l.status))
         fail(409, 'Tin đang giao dịch hoặc đã hoàn thành.');
       await db.query(
-        'UPDATE listings SET title=$1,description=$2,subject=$3,school=$4,area=$5,kind=$6,price=$7,point_cost=$8,condition=$9,pickup_label=$10,latitude=$11,longitude=$12 WHERE id=$13',
+        'UPDATE listings SET title=$1,description=$2,subject=$3,school=$4,area=$5,kind=$6,price=$7,point_cost=$8,condition=$9,pickup_label=$10,latitude=$11,longitude=$12,category=$14 WHERE id=$13',
         [
           b.title,
           b.description,
@@ -343,9 +384,11 @@ export function createApp(pool, { rateLimits = true, events = () => {} } = {}) {
           b.latitude,
           b.longitude,
           l.id,
+          b.category ?? l.category,
         ],
       );
       await bindImages(db, req.user.id, l.id, b.image_ids);
+      await bindClassification(db, req.user.id, l.id, b, b.category ?? l.category);
       return one(db, `${LISTING_SELECT} WHERE l.id=$1`, [l.id]);
     });
     res.json(result);

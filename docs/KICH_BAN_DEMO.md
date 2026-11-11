@@ -52,3 +52,11 @@ PostgreSQL healthy, `npm ci`, `npm run db:seed` cho database demo mới, API và
 ## Dữ liệu cũ
 
 Demo import ở database PostgreSQL rỗng riêng, không dùng bản đã seed. Giữ file SQLite nguồn và kiểm tra đăng nhập/chat sau chuyển đổi. Import lần hai bị từ chối để tránh nhân đôi dữ liệu.
+
+## Demo AI phân loại (bổ sung2–3phút)
+
+1. Mở Đăng tài liệu, nhập tên Giáo trình Java và lập trình hướng đối tượng; mô tả Class, kế thừa, interface và bài tập viết chương trình Java.
+2. Nhấn AI gợi ý phân loại; thấy ba nhóm, chưa tự áp dụng. Nhấn Công nghệ thông tin rồi lưu; mở chi tiết kiểm tra nhóm.
+3. Thử Sách còn mới / Mình bán lại, nhận tại trường: AI báo chưa đủ chắc chắn. Chọn nhóm thủ công; vẫn đăng bình thường.
+4. Mở ai/reports/metrics.json và evaluation.png, giải thích split336/72/72 theo chủ đề, top1test63/72, macro-F1=0,8771. Không đọc32/32 ca đủ ngưỡng thành độ chính xác100% của app.
+5. Nêu nguồn480mẫu tổng hợp và lỗi Toán rời rạc/Kết cấu xây dựng/Hóa phân tích. Trình bày train.py, trọng số JSON và test parity Python/Node. Python chỉ cần khi huấn luyện lại.

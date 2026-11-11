@@ -8,21 +8,23 @@
 - Ảnh: chọn tối đa5 ảnh, xem trước/đổi bìa/xóa, kiểm tra và nén bằng Sharp, lưu PostgreSQL. Điểm giao nhận nhập văn bản, đã bỏ map/WebView.
 - Hồ sơ public: bio, sao, nhận xét theo giao dịch, số lần hoàn thành; ẩn dữ liệu riêng tư.
 - Hỗ trợ: FAQ, phiếu riêng, admin reply/resolve.
+- AI phân loại: TF-IDF + Logistic Regression đã huấn luyện trên480mẫu tổng hợp, 8nhóm, top3/xác nhận/thủ công, model chạy trong Node; có train/eval/parity và feedback PostgreSQL. Chưa có đánh giá dữ liệu thực.
 - UI: hộp thư, ví, lối tắt, nút hỗ trợ, safe area và điều hướng mobile.
 
 ## Việc người dùng cần thực hiện để chạy bản mới
 
 1. Cập nhật Git, npm ci; mở Docker Desktop hoặc PostgreSQL native.
-2. Giữ DATABASE_URL trong server/.env; chạy db:migrate để bổ sung bảng ảnh. Chỉ import/seed khi tạo database mới.
+2. Giữ DATABASE_URL trong server/.env; chạy db:migrate để bổ sung bảng ảnh và AI. Chỉ import/seed khi tạo database mới.
 3. Giữ EXPO_PUBLIC_API_URL theo thiết bị, chạy API và Expo, kiểm tra health.
 4. Nghiệm thu trên iPhone/Android: safe area, bàn phím, Socket.IO reconnect, quyền chọn ảnh và quyền mạng.
-5. Kiểm tra chọn ảnh, xem trước, đăng/sửa ảnh trên thiết bị; sao lưu PostgreSQL gồm cả ảnh.
+5. Kiểm tra ảnh và AI: nhập tên/mô tả, lấy gợi ý, xác nhận/chọn lại và lưu; sao lưu PostgreSQL gồm cả ảnh/feedback.
 6. Điền thông tin cá nhân/giảng viên, cập nhật kết quả chạy trên máy trong báo cáo.
 
 ## Phát triển sau phiên bản này
 
 | Ưu tiên | Hạng mục                           | Tiêu chí nghiệm thu                                                             |
 | ------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| P1      | Dữ liệu AI thực tế                 | Gán nhãn có rà soát, test độc lập theo đầu sách/nguồn, đo macro-F1 và coverage |
 | P1      | Email xác minh/reset, đổi mật khẩu | Token dùng một lần, hết hạn, giới hạn gửi                                       |
 | P1      | Object storage/CDN cho ảnh          | Đo dung lượng/lưu lượng, URL và xóa ảnh nhất quán khi chuyển khỏi BYTEA        |
 | P1      | Chống gian lận điểm                | Theo dõi bất thường, giới hạn tài khoản và quy trình tranh chấp                 |

@@ -2,13 +2,14 @@
 
 Ứng dụng đa nền tảng cho sinh viên: **Expo SDK 58 / React Native + TypeScript**, **Node.js / Express / Socket.IO**, **PostgreSQL 17**. Chạy trong Visual Studio Code trên Windows, macOS hoặc Linux.
 
-[Báo cáo Word](docs/EduShare_Bao_Cao_Do_An.docx) · [Slide](docs/EduShare_Thuyet_Trinh.pptx) · [Database & ERD](docs/CO_SO_DU_LIEU.md) · [API](docs/API.md) · [Kiểm thử](docs/KIEM_THU.md) · [Kịch bản bảo vệ](docs/KICH_BAN_DEMO.md)
+[Báo cáo Word](docs/EduShare_Bao_Cao_Do_An.docx) · [Slide](docs/EduShare_Thuyet_Trinh.pptx) · [Database & ERD](docs/CO_SO_DU_LIEU.md) · [API](docs/API.md) · [Kiểm thử](docs/KIEM_THU.md) · [Kịch bản bảo vệ](docs/KICH_BAN_DEMO.md) · [AI phân loại & huấn luyện](docs/AI_PHAN_LOAI.md)
 
 ## Chức năng phiên bản 2
 
 - **Chat realtime trước khi mua:** mở sách → Nhắn người bán. Hộp thư riêng, trạng thái kết nối, đang soạn tin, số tin chưa đọc, lịch sử phân trang và đồng bộ khi kết nối lại. Tin nhắn lưu PostgreSQL; cùng mã gửi lại không tạo tin trùng.
 - **Ví điểm:** mua bán hoàn thành thưởng **10 điểm cho mỗi bên**; nhận sách miễn phí dùng **20 điểm**, trừ khi chủ sách chấp nhận, hoàn khi hủy. Đổi/tặng không sinh điểm. Mỗi cặp được thưởng một lần/24 giờ; mỗi người tối đa 30 điểm/ngày UTC. Điểm không đổi thành tiền.
 - **Ảnh tài liệu:** chọn tối đa 5 ảnh JPG/PNG/WebP, mỗi ảnh tối đa 5 MB; xem trước, xóa và chọn ảnh bìa trước khi đăng. Ảnh xuất hiện trong danh sách, hồ sơ và chi tiết sách. Điểm giao nhận nhập bằng văn bản và thống nhất qua chat; đã loại bỏ bản đồ.
+- **AI gợi ý nhóm tài liệu:** mô hình TF-IDF + Logistic Regression đã huấn luyện, chạy trong API Node không cần Python/API key lúc dùng app. Dựa trên tên/mô tả, đề xuất nhóm để người đăng xác nhận hoặc chọn thủ công. Bộ demo480 mẫu tổng hợp, test top1 Accuracy87,5%, macro-F1=0,8771; không phải đánh giá dữ liệu sinh viên thực. Xem [quy trình và kết quả](docs/AI_PHAN_LOAI.md).
 - **Hồ sơ công khai:** giới thiệu, trường/khu vực, số giao dịch hoàn thành, số sao, số nhận xét và sách đang đăng. Chỉ thành viên giao dịch đã hoàn thành mới được đánh giá, mỗi bên một lần.
 - **Hộp hỗ trợ:** trợ lý FAQ theo chủ đề và phiếu riêng để quản trị viên trả lời/đóng phiếu. FAQ không phải AI sinh và không gửi dữ liệu tới dịch vụ LLM.
 - **Giao diện mới:** hộp thư, ví điểm, lối tắt giao dịch, nút hỗ trợ, điều hướng mobile 5 mục, safe area cho màn hình tai thỏ.
@@ -58,7 +59,7 @@ Trên macOS/Linux dùng `npm` thay `npm.cmd`, `cp` thay `Copy-Item`.
 
 ## 3. Cập nhật dự án đang có (Windows)
 
-**Đã dùng PostgreSQL và chỉ cập nhật tính năng ảnh:** dừng API/Expo, chạy các lệnh sau. Giữ nguyên DATABASE_URL hiện có; không seed hoặc import lại.
+**Đã dùng PostgreSQL và cập nhật ảnh và AI phân loại:** dừng API/Expo, chạy các lệnh sau. Giữ nguyên DATABASE_URL hiện có; không seed hoặc import lại.
 
 ```powershell
 cd D:\EDUSHARE\AppEduShare
@@ -67,7 +68,7 @@ npm.cmd ci
 npm.cmd run db:migrate
 ```
 
-Migration v2 bổ sung bảng `listing_images`, giữ người dùng, tin đăng, chat và số điểm hiện có. API cũng tự áp dụng migration khi khởi động. Sau đó mở hai terminal theo mục 5 và chạy Expo với `--clear`.
+Migration v2 bổ sung `listing_images`; v3 thêm `listings.category` và `ai_classifications`, giữ người dùng, tin đăng, chat và số điểm hiện có. Model đã nằm trong repository, không phải tự huấn luyện trước khi dùng app. API cũng tự áp dụng migration khi khởi động. Sau đó mở hai terminal theo mục 5 và chạy Expo với `--clear`.
 
 **Chỉ khi chuyển từ bản SQLite cũ sang PostgreSQL**, thực hiện phần bên dưới:
 
@@ -215,7 +216,7 @@ Xem database bằng **pgAdmin** hoặc extension PostgreSQL của VS Code:
 
 - Host `localhost`, port `5432`, database `edushare`, user `edushare`, mật khẩu local theo cấu hình compose.
 - Xem `public.users`, `listings`, `conversations`, `messages`, `transactions`, `point_ledger`, `reviews`, `support_tickets`...
-- Schema khởi tạo: `server/src/schema.sql`; ảnh được bổ sung bởi `server/migrations/002-listing-images.sql`. Migrations có version và khóa; xem thêm bảng `listing_images` trong pgAdmin.
+- Schema khởi tạo: `server/src/schema.sql`; ảnh và AI được bổ sung bởi `server/migrations/002-listing-images.sql`, `003-document-classifier.sql`. Migrations có version và khóa; xem thêm bảng `listing_images`, `ai_classifications` và cột `listings.category` trong pgAdmin (17 bảng tổng cộng).
 
 ## 7. Ảnh tài liệu và địa điểm giao nhận
 
@@ -233,21 +234,22 @@ PostgreSQL cần đang chạy; test tạo **schema tạm riêng** và xóa schem
 
 ```powershell
 npm.cmd test
-# 49 tests: 26 backend PostgreSQL + 23 frontend
+# 56 tests: 33 server + 23 frontend
 npm.cmd run check
 npm.cmd run check:sdk -w apps/mobile
 npm.cmd run build:native -w apps/mobile
 ```
 
-GitHub Actions có PostgreSQL service, kiểm tra SDK, TypeScript, tests và export web/iOS/Android. Export native không phải APK/IPA; vẫn cần nghiệm thu trên điện thoại. Web build ở `apps/mobile/dist`; native ở `dist-native`, đều không commit.
+GitHub Actions có PostgreSQL service, kiểm tra SDK, TypeScript, tests và export web/iOS/Android; job riêng huấn luyện lại bằng Python3.12 và so sánh trọng số với model đã xuất. Export native không phải APK/IPA; vẫn cần nghiệm thu trên điện thoại. Web build ở `apps/mobile/dist`; native ở `dist-native`, đều không commit.
 
 ## 9. Cấu trúc, sao lưu và giới hạn
 
 ```text
-apps/mobile/                 Giao diện Expo, API client, Socket.IO, chọn/xem ảnh
+ai/                          Dữ liệu, huấn luyện, trọng số AI và báo cáo đánh giá
+apps/mobile/                 Giao diện Expo, API client, Socket.IO, ảnh, AI gợi ý
 server/src/                  Express, nghiệp vụ điểm/giao dịch, realtime, SQL
 server/test/                 Kiểm thử HTTP + sockets + PostgreSQL + import
-server/migrations/           Migration ảnh PostgreSQL + schema SQLite lịch sử
+server/migrations/           Migration PostgreSQL ảnh/AI + schema SQLite lịch sử
 docs/                        Báo cáo, slide, ERD, ảnh chạy thật và hướng dẫn
 compose.yml                  PostgreSQL cục bộ + persistent volume
 ```
